@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-//import FeaturesPage from './pages/FeaturesPage';
 import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
 import NavigationBarLoggedOut from './components/NavBar.js';
 
 const App = () => {
@@ -26,7 +24,6 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
 
           
         </Routes>
