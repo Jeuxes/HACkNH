@@ -1,23 +1,4 @@
 export const api = {
-  signup: async (userData) => {
-    try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Signup failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
-  },
-
   login: async (userData) => {
     try {
       const response = await fetch('/api/login', {
@@ -36,7 +17,7 @@ export const api = {
       throw error;
     }
   },
-
+  
   checkHealth: async () => {
     try {
       const response = await fetch('/api/health');
@@ -51,19 +32,5 @@ export const api = {
     }
   },
 
-  getListings: async () => {
-    try {
-      const response = await fetch('/api/listings');
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch listings');
-      }
-
-      return await response.json(); // Assuming it returns an array of listings
-    } catch (error) {
-      console.error('Error fetching listings:', error);
-      throw error;
-    }
-  }
+  
 };
