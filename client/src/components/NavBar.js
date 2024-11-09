@@ -12,6 +12,7 @@ function NavigationBar() {
   const pages = [
     { name: "WheresWildacat", path: "/" },
     { name: "map", path: "/maps" },
+    { name: "Chat", path: "/chat" }
   ];
 
   const handleScroll = () => {
@@ -23,7 +24,7 @@ function NavigationBar() {
     } else if (Math.abs(currentScrollY - lastScrollY) > scrollThreshold) {
       setVisible(currentScrollY < lastScrollY); // Show on scroll up, hide on scroll down
     }
-    
+
     setLastScrollY(currentScrollY);
   };
 
@@ -43,7 +44,17 @@ function NavigationBar() {
       <Toolbar className="toolbar">
         {/* Navigation Links */}
         <Box className="nav-links" sx={{ display: 'flex', alignItems: 'center' }}>
-          {pages.map((page, index) => (
+          {/* Add the Wildcat image next to "WheresWildacat" */}
+          <img
+            src="/images/wildcat.png"
+            alt="Wildcat Logo"
+            style={{
+              width: '50px',
+              height: '50px',
+              marginRight: '8px',
+            }}
+          />
+          {pages.map((page) => (
             <Button
               key={page.name}
               component={Link}

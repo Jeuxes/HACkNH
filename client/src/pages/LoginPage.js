@@ -8,7 +8,6 @@ function LoginPage() {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [interests, setInterests] = useState({
     football: false,
@@ -62,7 +61,6 @@ function LoginPage() {
     const userData = {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      email: email.trim(),
       interests: Object.keys(interests).filter((key) => interests[key]),
     };
 
@@ -92,7 +90,7 @@ function LoginPage() {
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom>
-          Log on
+          Register
         </Typography>
         <Box
           component="form"
@@ -122,15 +120,7 @@ function LoginPage() {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
-          <TextField
-            label="Email"
-            variant="outlined"
-            fullWidth
-            required
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        
 
           <Typography variant="h6" component="h2" sx={{ mt: 2, mb: 1 }}>
             Interests
@@ -159,7 +149,7 @@ function LoginPage() {
             type="submit"
             sx={{ mt: 2 }}
           >
-            Log in
+            Register
           </Button>
           {error && (
             <Typography variant="body2" color="error" sx={{ mt: 1 }}>
