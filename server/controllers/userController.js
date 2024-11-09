@@ -85,9 +85,9 @@ export const updateLoc = (req, res) => {
     
 }
 
-export const getVenues = (req, res) => {
-
-}
+export const getHotspots = (req, res) => {
+    // const {uid} = req.body
+}   
 
 export const startListener = (io) => {
     io.on('connection', (socket) => {
