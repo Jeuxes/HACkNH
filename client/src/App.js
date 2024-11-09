@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import NavigationBarLoggedOut from './components/NavBar.js';
-import MapsPage from './pages/MapsPage.js';
-import ChatPage from './pages/ChatPage.js';
-const App = () => {
-  const [navBarHeight, setNavBarHeight] = useState(120);
-  const [data, setData] = useState(null);
+import LoginPage from './pages/LoginPage'; // Assume this handles registration too.
+import NavigationBarLoggedOut from './components/NavBar';
 
-  // Get the height of the navbar when the component mounts
+const App = () => {
+  const [isRegistered, setIsRegistered] = useState(localStorage.getItem('isRegistered') === 'true');
+  const [navBarHeight, setNavBarHeight] = useState(120);
+
   useEffect(() => {
     const navBar = document.querySelector('#navbar');
     if (navBar) {
@@ -18,29 +16,30 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    // Listen for changes in registration status if needed
+    const handleStorageChange = () => {
+      setIsRegistered(localStorage.getItem('isRegistered') === 'true');
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   return (
-    <div>
-      <Router>
-        <NavigationBarLoggedOut navBarHeight={navBarHeight} />
+    <Router>
+      <div>
+        {isRegistered && <NavigationBarLoggedOut navBarHeight={navBarHeight} />}
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={isRegistered ? <HomePage /> : <Navigate to="/login" />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/maps" element={<MapsPage />} />
-          <Route path="/chat" element={<ChatPage />} />
-
-
-          
+          <Route path="*" element={<Navigate to={isRegistered ? "/" : "/login"} />} />
         </Routes>
-      </Router>
-
-      {/* Render the fetched data */}
-      {data && (
-        <div>
-          <p>Message from Flask: {data.message}</p>
-          <p>Status: {data.status}</p>
-        </div>
-      )}
-    </div>
+      </div>
+    </Router>
   );
 };
 
