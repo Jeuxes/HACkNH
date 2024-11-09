@@ -1,12 +1,12 @@
 import express from 'express'
 
-import {login, updateLoc, createSocket} from '../controllers/userController.js'
+import {login, updateLoc, startListener} from '../controllers/userController.js'
 
 const router = express.Router()
 
 router.post('/login', login)
 router.post('/updateLoc', updateLoc)
-router.post('/createSocket', createSocket)
+router.post('/startListener', startListener)
 
 export default router
 
