@@ -9,6 +9,8 @@ import {
   CardContent,
   CardMedia,
 } from "@mui/material";
+import LoginIcon from '@mui/icons-material/Login'; // Icon for the login/sign up button
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Icon for the health check button
 import { api } from "../services/apiController";
 import "../styling/HomePage.css";
 
@@ -46,54 +48,53 @@ function HomePage() {
     }
   };
 
-  
+  const features = [
+    
+  ];
 
   return (
     <Container>
-      <Box className="box-1">
-        <Box className="box-3">
-          <Typography variant="h2" component="h1" gutterBottom>
-            Welcome to Wheres wildcat 
-          </Typography>
-          <Typography variant="h6" component="p" gutterBottom>
-          </Typography>
-          <Box className="button-box" sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            <Button
-              className="button-1"
-              variant="contained"
-              color="primary"
-              size="large"
-              href="/vehicles"
-            >
-            </Button>
-            <Button
-              className="button-2"
-              variant="outlined"
-              color="secondary"
-              size="large"
-              onClick={checkHealth}
-            >
-            </Button>
-          </Box>
-          {healthStatus && (
-            <Typography
-              variant="body1"
-              className="health-status"
-              sx={{ mt: 4 }} // Adjusted margin-top to increase space
-            >
-              Server Health Status: {healthStatus}
-            </Typography>
-          )}
+      {/* Top Section */}
+      <Box className="welcome-section">
+        <Typography variant="h2" component="h1" className="welcome-message" gutterBottom>
+          Welcome to Where's Wildcat
+        </Typography>
+        
+        <Box className="button-box" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 4 }}>
+          <Button
+            className="button-1"
+            variant="contained"
+            color="primary"
+            size="large"
+            href="/signup"
+            startIcon={<LoginIcon />}
+          >
+            Sign Up Now
+          </Button>
+          <Button
+            className="button-2"
+            variant="outlined"
+            color="secondary"
+            size="large"
+            onClick={checkHealth}
+            startIcon={<HealthAndSafetyIcon />}
+          >
+            Check Server Health
+          </Button>
         </Box>
+        {healthStatus && (
+          <Typography
+            variant="body1"
+            className="health-status"
+            sx={{ mt: 4 }}
+          >
+            Server Health Status: {healthStatus}
+          </Typography>
+        )}
       </Box>
 
+      {/* Bottom Section - Features */}
       <Container maxWidth="md" className="features-section">
-        <Box className="title-box">
-          <Typography variant="h3" component="h1" gutterBottom>
-          </Typography>
-          <Typography variant="h6" component="p">
-          </Typography>
-        </Box>
         <Grid container spacing={4}>
           {features.map((feature, index) => (
             <Grid item xs={12} sm={6} key={index}>
