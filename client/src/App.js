@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NavigationBarLoggedOut from './components/NavBar.js';
 import MapsPage from './pages/MapsPage.js';
+import ChatPage from './pages/ChatPage.js';
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
   const [data, setData] = useState(null);
@@ -25,6 +26,8 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/maps" element={<MapsPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+
 
           
         </Routes>

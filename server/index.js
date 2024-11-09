@@ -1,26 +1,40 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
 import cors from 'cors';
-import postRoutes from './routes/post.js';
+import bodyParser from 'body-parser';
+import userRoutes from './routes/user.js';
+import http from 'http';
+import { Server } from 'socket.io';
+import { startListener } from './controllers/userController.js'; // Import startListener from your socket file
 
-const app = express(); //App instance
+const app = express();
+const port = 6969;
 
-
-
-//Setup body-parser for requests
-app.use(bodyParser.json({limit : "30mb", extended: true}));
-app.use(bodyParser.urlencoded({limit : "30mb", extended: true}));
-
+// Middleware setup
+app.use(bodyParser.json({ limit: '30mb', extended: true }));
+app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 app.use(cors());
 
-app.use('/posts', postRoutes);
-// https://www.mongodb.com/cloud/atlas
-const CONNECTION_URL = 'mongodb+srv://classmateoffical:tPLdpKWanVaOknuy@pmcluster0.gzf9ouu.mongodb.net/?retryWrites=true&w=majority&appName=PMCluster0';
-const PORT = process.env.PORT || 8000;
+// Routes
+app.use('/user', userRoutes);
 
-mongoose.connect(CONNECTION_URL)
-    .then(() => app.listen(PORT, () => console.log('Server Running on port: ' + PORT)))
-    .catch((error) => console.log(error.message));
+app.get('/', (req, res) => {
+    res.send('hello world');
+    console.log('Root request received');
+});
 
+// Create HTTP server and initialize WebSocket server
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:3000', // Adjust to your client origin
+        methods: ['GET', 'POST'],
+    },
+});
 
+// Initialize WebSocket listener
+startListener(io);
+
+// Start the server
+server.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+});

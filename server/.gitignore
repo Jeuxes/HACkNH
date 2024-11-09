@@ -1,2 +1,8 @@
+# production
+/build
+
+# local env files
+.env*.local
+*.env
 
 node_modules/
