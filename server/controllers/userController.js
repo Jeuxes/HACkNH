@@ -1,18 +1,10 @@
 import generateUniqueId from 'generate-unique-id'
 import pool from './db.js'
+import {packInterests} from '../util/interests.js'
 
 
 // To store location/match/socket info
 export let activeUsers = {}
-
-
-export const packInterests = (interests) => {
-    return 0
-}
-
-export const unpackInterests = (interests) => {
-    return []
-}
 
 export const login = async (req, res) => {
     const post = req.body
@@ -45,16 +37,7 @@ export const login = async (req, res) => {
 export const updateLoc = (req, res) => {
     const post = req.body
 
-    const updateSchema = {
-        uid: {},
-        lat: {},
-        long: {}
-    }
-
     try {
-        if (!validate(post, updateSchema)) {
-            throw {message: 'invalid update parameters'}
-        }
 
         const uid = post['uid']
         const lat = post['lat']
