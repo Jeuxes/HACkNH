@@ -9,6 +9,8 @@ import {
   CardContent,
   CardMedia,
 } from "@mui/material";
+import LoginIcon from '@mui/icons-material/Login'; // Icon for the login/sign up button
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Icon for the health check button
 import { api } from "../services/apiController";
 import "../styling/HomePage.css";
 
@@ -26,7 +28,8 @@ function HomePage() {
   };
 
   const features = [
-    
+    // Example feature (if you have any)
+    // { title: 'Feature 1', description: 'Description of feature 1', image: '/path-to-image.jpg' }
   ];
 
   return (
@@ -34,18 +37,18 @@ function HomePage() {
       <Box className="box-1">
         <Box className="box-3">
           <Typography variant="h2" component="h1" gutterBottom>
-            Welcome to Wheres wildcat 
+            Welcome to Where's Wildcat
           </Typography>
-          <Typography variant="h6" component="p" gutterBottom>
-          </Typography>
-          <Box className="button-box" sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Box className="button-box" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 4 }}>
             <Button
               className="button-1"
               variant="contained"
               color="primary"
               size="large"
-              href="/vehicles"
+              href="/signup"
+              startIcon={<LoginIcon />}
             >
+              Sign Up Now
             </Button>
             <Button
               className="button-2"
@@ -53,14 +56,16 @@ function HomePage() {
               color="secondary"
               size="large"
               onClick={checkHealth}
+              startIcon={<HealthAndSafetyIcon />}
             >
+              Check Server Health
             </Button>
           </Box>
           {healthStatus && (
             <Typography
               variant="body1"
               className="health-status"
-              sx={{ mt: 4 }} // Adjusted margin-top to increase space
+              sx={{ mt: 4 }}
             >
               Server Health Status: {healthStatus}
             </Typography>
@@ -68,14 +73,7 @@ function HomePage() {
         </Box>
       </Box>
 
-      <Container maxWidth="md" className="features-section">
-        <Box className="title-box">
-          <Typography variant="h3" component="h1" gutterBottom>
-          </Typography>
-          <Typography variant="h6" component="p">
-          </Typography>
-        </Box>
-        <Grid container spacing={4}>
+      <Container maxWidth="md" className="features-section">        <Grid container spacing={4}>
           {features.map((feature, index) => (
             <Grid item xs={12} sm={6} key={index}>
               <Card className="feature-card">
