@@ -12,6 +12,27 @@ import {
 import { api } from "../services/apiController";
 import "../styling/HomePage.css";
 
+
+const features = [
+  {
+    description: "Meet other Wildcats With Similar Interests!",
+    image: "/images/feature2.jpg"
+  },
+  {
+    description: "Discover Popular Wildcat Locations!!",
+    image: "/images/feature1.jpeg"
+  },
+  {
+    title: "Feature 3",
+    description: "Description of Feature 3",
+    image: "/path-to-image-3.jpg"
+  },
+  {
+    title: "Feature 4",
+    description: "Description of Feature 4",
+    image: "/path-to-image-4.jpg"
+  }
+];
 function HomePage() {
   const [healthStatus, setHealthStatus] = useState("");
 
@@ -25,9 +46,7 @@ function HomePage() {
     }
   };
 
-  const features = [
-    
-  ];
+  
 
   return (
     <Container>
