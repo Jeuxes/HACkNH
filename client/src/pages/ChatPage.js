@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, List, ListItem, ListItemText, Divider, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 
 let socket;
 
-function ChatPage({ userId2 }) {
-  const [userId, setUserId] = useState('');
+function ChatPage() {
+  const { userId } = useParams(); // Retrieve userId from route parameters
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (isConnected) {
-      // Initialize socket and register user once connected
+    if (isConnected && userId) {
+      // Initialize the socket connection
       socket = io('http://localhost:6969');
-
-      // Register the userId with the server after connecting
+      
+      // Register the user with the server using userId
       socket.emit('register', userId);
 
-      // Listen for initial messages and new incoming messages
+      // Listen for initial messages from the server
       socket.on('initialMessages', (initialMessages) => {
         setMessages(initialMessages);
       });
-      
-      socket.on('newMessage', (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
+
+      // Listen for new incoming messages from the server as JSON objects
+      socket.on('newMessage', (messageData) => {
+        // Assuming messageData is a JSON object with 'name' and 'content'
+        const parsedMessage = {
+          name: messageData.name,
+          content: messageData.content,
+        };
+        setMessages((prevMessages) => [...prevMessages, parsedMessage]);
       });
 
       // Cleanup on component unmount
@@ -38,10 +45,6 @@ function ChatPage({ userId2 }) {
   }, [isConnected, userId]);
 
   const handleConnect = () => {
-    if (userId.trim() === '') {
-      setError('Please enter a valid user ID.');
-      return;
-    }
     setIsConnected(true);
   };
 
@@ -49,13 +52,11 @@ function ChatPage({ userId2 }) {
     if (newMessage.trim() === '') return;
 
     const messageData = {
-      senderId: userId,
-      recipientId: userId2,
+      name: 'You', // Identifying the sender as 'You' for local messages
       content: newMessage.trim(),
-      timestamp: new Date().toISOString(),
     };
 
-    // Emit the message through WebSocket
+    // Emit the message as JSON to the server through WebSocket
     socket.emit('sendMessage', messageData);
     setNewMessage('');
     setMessages((prevMessages) => [...prevMessages, messageData]);
@@ -99,8 +100,8 @@ function ChatPage({ userId2 }) {
             <ListItem key={index} alignItems="flex-start" sx={{ mb: 0.5 }}>
               <ListItemText
                 primary={
-                  <Typography variant="subtitle2" color={message.senderId === userId ? 'primary' : 'secondary'} sx={{ fontSize: '0.85rem' }}>
-                    {message.senderId === userId ? 'You' : 'Other'}
+                  <Typography variant="subtitle2" color={message.name === 'You' ? 'primary' : 'secondary'} sx={{ fontSize: '0.85rem' }}>
+                    {message.name}
                   </Typography>
                 }
                 secondary={
@@ -156,20 +157,9 @@ function ChatPage({ userId2 }) {
       <Dialog open={!isConnected} onClose={() => {}}>
         <DialogTitle>Connect to Chat</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="User ID"
-            fullWidth
-            variant="outlined"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-          />
-          {error && (
-            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-              {error}
-            </Typography>
-          )}
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Connecting as user {userId}
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConnect} color="primary" variant="contained">
