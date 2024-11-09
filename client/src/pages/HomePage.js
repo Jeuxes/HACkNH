@@ -33,7 +33,7 @@ function HomePage() {
       image: "/images/feature2.jpg"
     },
     {
-      description: "Discover Wildcat Hotspots!",
+      description: "Discover Popular Wildcat Locations!!",
       image: "/images/feature1.jpeg"
     },
     {
