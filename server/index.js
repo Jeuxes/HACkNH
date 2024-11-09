@@ -1,26 +1,22 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import postRoutes from './routes/post.js';
+import express from 'express'
+import cors from 'cors'
+import bodyParser from 'body-parser'
+import userRoutes from './routes/user.js'
 
-const app = express(); //App instance
+const app = express()
+const port = 6969
 
+app.use(bodyParser.json({limit : '30mb', extended: true}));
+app.use(bodyParser.urlencoded({limit : '30mb', extended: true}));
+app.use(cors())
 
+app.use('/user', userRoutes)
 
-//Setup body-parser for requests
-app.use(bodyParser.json({limit : "30mb", extended: true}));
-app.use(bodyParser.urlencoded({limit : "30mb", extended: true}));
+app.get('/', (req, res) => {
+    res.send('hello world')
+    console.log('root request recieved')
+})
 
-app.use(cors());
-
-app.use('/posts', postRoutes);
-// https://www.mongodb.com/cloud/atlas
-const CONNECTION_URL = 'mongodb+srv://classmateoffical:tPLdpKWanVaOknuy@pmcluster0.gzf9ouu.mongodb.net/?retryWrites=true&w=majority&appName=PMCluster0';
-const PORT = process.env.PORT || 8000;
-
-mongoose.connect(CONNECTION_URL)
-    .then(() => app.listen(PORT, () => console.log('Server Running on port: ' + PORT)))
-    .catch((error) => console.log(error.message));
-
-
+app.listen(port, () => {
+    console.log(`listening on port ${port}`)
+})
