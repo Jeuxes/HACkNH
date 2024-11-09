@@ -41,32 +41,34 @@ const getUser = async (uid) => {
 }
 
 export const register = async (req, res) => {
-    const post = req.body
-
-
+    const { firstName, lastName, interests } = req.body; // Destructure with proper names
+    console.log("asdfasdf")
     try {
-        if (typeof post.name !== 'string' || Object.prototype.toString.call(post.interests) !== '[object Array]') {
-            throw {message: 'invalid login parameters'}
-        }
-
-        const uid = generateUniqueId()
-
-        const query = 'INSERT INTO users(uid,name,interests) VALUES ($1,$2,$3)'
-        const vals = [uid, post['name'], packInterests(post["interests"])]
-
-        const result = await pool.query(query, vals)
-
-        if (result.rowCount != 1) {
-            throw {message: 'error inserting', result: result}
-        }
-
-        console.log(`User \'${post['name']}\' registered with uid ${uid}`)
-
-        res.status(200).json({status: 'Success', uid: uid})
+      // Generate unique user ID
+      const uid = generateUniqueId();
+  
+      // Use a parameterized query to insert data securely
+      const query = 'INSERT INTO users(uid, firstname, lastname, interests) VALUES ($1, $2, $3, $4)';
+      const values = [uid, firstName, lastName, packInterests(interests)];
+  
+      const result = await pool.query(query, values);
+  
+      if (result.rowCount !== 1) {
+        throw new Error('Error inserting user');
+      }
+  
+      console.log(`User '${firstName} ${lastName}' registered with uid ${uid}`);
+      
+      // Respond with 'userId' to match front-end expectations
+      res.status(200).json({ status: 'Success', userId: uid });
     } catch (err) {
-        res.status(422).json({message: err.message})
+      console.error(`Error registering user:`, req.body, err);
+      res.status(422).json({ message: err.message });
     }
-}
+  };
+
+  
+  
 
 export const updateLoc = (req, res) => {
     res.status(200).json(null) // temp so client doesn't wait
