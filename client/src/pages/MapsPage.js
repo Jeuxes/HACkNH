@@ -6,11 +6,12 @@ import {Picker} from '@react-native-picker/picker';
 import {Slider} from "@mui/material";
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import SearchIcon from '@mui/icons-material/Search';
-import BottomDrawer from "../components/BottomDrawer";
-import TextIconButton from "../components/TextIconButton";
-import {GoogleMapWrapper, SearchBar, FilterDrawerContent} from "../components/map";
+import BottomDrawer from "../components/drawers/BottomDrawer";
+import TextIconButton from "../components/general/TextIconButton";
+import {GoogleMapWrapper, FilterDrawerContent} from "../components/map";
 import { LocationType } from "../utils/types";
 import * as styles_ from "../styles";
+import {Autocomplete} from '@react-google-maps/api';
 
 const hardcode_location = [
   {
@@ -44,18 +45,31 @@ function getDeviceType() {
   }
 }
 
+const fetchPredictions = async (term) => {
+  try {
+    const result = await Autocomplete.fetchPlacePredictions({
+      input: term,
+      types: ['geocode'],
+      key: 'YOUR_GOOGLE_PLACES_API_KEY'
+    });
+    
+    setPredictions(result);
+  } catch (error) {
+    console.error('Error fetching predictions:', error);
+  }
+};
+
 const MapsPage = () => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedTypes, setSelectedTypes] = useState([]); // State to store the selected types
   const [radius, setRadius] = useState(8040); // Default radius in meters
   const [isFilterDrawerVisible, setFilterDrawerVisible] = useState(false);
-  const [isGroupDrawerVisible, setGroupDrawerVisible] = useState(false);
   const [locationsInRadius, setLocationsInRadius] = useState(hardcode_location);
   const [isExpanded, setIsExpanded] = useState(false);
 
   console.log('Google Maps API Key:', process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
   // FIXME need to update this
-  const locationTypes = Object.values(LocationType).filter(type => type !== "SKIING" && type !== LocationType.ALL_SPORTS);
+  const locationTypes = Object.values(LocationType).filter(type => type !== "SKIING");
 
   useEffect(() => {
   }, []);
@@ -86,18 +100,19 @@ const MapsPage = () => {
       setSelectedTypes([...selectedTypes, type]);
     }
   };
-
-  const filterButtonProps = {
-    isExpanded: isExpanded,
-    setIsExpanded: () => setIsExpanded,
-    locationTypes: locationTypes,
-    selectedTypes: selectedTypes,
-    handleTypeSelect: () => handleTypeSelect
+  
+  const handleOnClose = () => {
+    console.log("closing");
+    setFilterDrawerVisible(false)
+  }
+  
+  const handleSetDrawerOpen = (visible) => {
+    console.log("handling drawer");
+    setFilterDrawerVisible(visible)
   }
 
   return (
     <div style={{ width: '90vw', height: '90vh' }}>
-      <SearchBar isFilterDrawerVisible={isFilterDrawerVisible} setFilterDrawerVisible={setFilterDrawerVisible} />
       <View style={{flex: 1, width: '90vw', height: '90vh', alignItems: 'center', justifyContent: 'center',}}>
         <Picker
           mode="dropdown"
@@ -112,13 +127,21 @@ const MapsPage = () => {
             ))
           ))}
         </Picker>
-        <GoogleMapWrapper filteredLocations={filteredLocations}/>
-        <BottomDrawer
-          setVisible={setFilterDrawerVisible}
-          isVisible={isFilterDrawerVisible}
-          onClose={() => setFilterDrawerVisible(false)}
-          children={<FilterDrawerContent{...filterButtonProps}/>}
-        />
+        <GoogleMapWrapper isFilterVisible={isFilterDrawerVisible} setFilterVisible={handleSetDrawerOpen} filteredLocations={filteredLocations}>
+          <BottomDrawer
+            setVisible={handleSetDrawerOpen}
+            isVisible={isFilterDrawerVisible}
+            onClose={handleOnClose}
+          >
+            <FilterDrawerContent
+              isExpanded={isExpanded}
+              setIsExpanded={() => setIsExpanded}
+              locationTypes={locationTypes}
+              selectedTypes={selectedTypes}
+              handleTypeSelect={() => handleTypeSelect}
+            />
+          </BottomDrawer>
+        </GoogleMapWrapper>
       </View>
     </div>
   );

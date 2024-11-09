@@ -1,28 +1,32 @@
 import SearchIcon from "@mui/icons-material/Search";
 import * as styles_ from "../../styles";
-import {StyleSheet, TextInput, View} from "react-native";
+import {StyleSheet, View} from "react-native";
 import React from "react";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
-import TextIconButton from "../TextIconButton";
+import TextIconButton from "../general/TextIconButton";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
-const SearchBar = ({isFilterDrawerVisible, setFilterDrawerVisible}) => {
+const SearchBar = ({isFilterVisible, setFilterVisible}) => {
   return (
     <View style={search_style.search_bar}>
       <View style={search_style.searchSection}>
         <SearchIcon style={search_style.searchIcon} size={20} color={styles_.GRAY}/>
-        <TextInput
-          style={search_style.input}
-          placeholder="Search"
-          placeholderTextColor={styles_.LIGHT_GRAY}
+        <GooglePlacesAutocomplete
+          placeholder='Search'
+          onPress={(data, details = null) => {
+            // 'details' is provided when fetchDetails = true
+            console.log(data, details);
+          }}
+          query={{
+            key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+            language: 'en',
+          }}
         />
       </View>
       <TextIconButton
         style={[search_style.center, search_style.button, search_style.filter_button]}
         onPress={() => {
-          // if (isGroupDrawerVisible) {
-          //     setGroupDrawerVisible(!isGroupDrawerVisible)
-          // }
-          setFilterDrawerVisible(!isFilterDrawerVisible)
+          setFilterVisible(!isFilterVisible)
         }}
         icon={<TuneOutlinedIcon color={styles_.GRAY} size={24}/>}
       />
@@ -34,6 +38,9 @@ const SearchBar = ({isFilterDrawerVisible, setFilterDrawerVisible}) => {
 const search_style = StyleSheet.create({
   search_bar: {
     top: 80, zIndex: 1200, justifyContent: 'center', flexDirection: "row"
+  },
+  search_list: {
+    top: 100, zIndex: 1200, justifyContent: 'center', flexDirection: "column"
   },
   center: {
     alignItems: 'center',

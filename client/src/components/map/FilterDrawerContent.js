@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import TextIconButton from "../TextIconButton";
+import TextIconButton from "../general/TextIconButton";
 import * as styles_ from "../../styles";
 import React from "react";
 

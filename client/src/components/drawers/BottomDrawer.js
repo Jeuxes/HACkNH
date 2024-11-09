@@ -1,12 +1,13 @@
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef} from 'react';
 import { View, Text, Button, Image, TouchableOpacity, Modal, Animated, PanResponder, Dimensions, StyleSheet } from 'react-native';
-import * as styles_ from "../styles";
-import TextIconButton from "./TextIconButton";
+import * as styles_ from "../../styles";
+import TextIconButton from "../general/TextIconButton";
 import CloseIcon from '@mui/icons-material/Close';
 
 const screenHeight = Dimensions.get('window').height;
 
-const BottomDrawer = forwardRef(({ isVisible, children, onClose, }, ref) => {
+const BottomDrawer = forwardRef(({ isVisible, setVisible, onClose, children }, ref) => {
+    const [isFullyOpen, setFullyOpen] = React.useState(false);
     const [currentSnap, setCurrentSnap] = useState(0);
     const panY = useRef(new Animated.Value(screenHeight)).current;
 
@@ -21,24 +22,26 @@ const BottomDrawer = forwardRef(({ isVisible, children, onClose, }, ref) => {
     });
 
     const fullScreenAnim = Animated.timing(panY, {
-        toValue: -300, // Would move modal to full screen
+        toValue: -600, // Would move modal to full screen
         duration: 500,
         useNativeDriver: true,
     });
 
     const panResponders = useRef(
         PanResponder.create({
+            // Allow pan responder to activate
             onStartShouldSetPanResponder: () => true,
+            // Handle card movement while dragging
             onPanResponderMove: Animated.event([null, { dy: panY }], { useNativeDriver: false }),
+            // Handle card release after dragging
             onPanResponderRelease: (e, gs) => {
                 if (gs.dy > 0 && gs.vy > 2) {
+                    console.log("Swipe down --- Closing drawer")
                     return closeAnim.start(() => onClose());
+                } else if (gs.dy < -100) { // Assuming -100 is your threshold for swiping up to go full screen
+                    console.log("Starting full screen")
+                    return fullScreenAnim.start(() => setFullyOpen(true)); // Transition to full screen
                 }
-                // else if (gs.dy < -200) { // Assuming -100 is your threshold for swiping up to go full screen
-                //     console.log("Starting full screen")
-                //     resetPositionAnim.stop();
-                //     return fullScreenAnim.start(); // Transition to full screen
-                // }
                 return resetPositionAnim.start();
             },
         })
@@ -46,17 +49,20 @@ const BottomDrawer = forwardRef(({ isVisible, children, onClose, }, ref) => {
 
     useEffect(() => {
         if (isVisible) {resetPositionAnim.start();}
-        else {closeAnim.start();}
+        else {
+            closeAnim.start(() => onClose());
+        }
     }, [isVisible, closeAnim, resetPositionAnim]);
+    
 
     return (
-        <Modal visible={isVisible} backdropColor={"transparent"} style={styles.modal} presentationStyle={'overFullScreen'}>
-            <Animated.View style={[styles.drawerContainer, { transform: [{ translateY: panY }] }]}>
+        <Modal backdropColor={false} transparent={true} visible={isVisible} style={styles.modal} presentationStyle={'overFullScreen'}>
+            <Animated.View style={[styles.drawerContainer, { transform: [{ translateY: panY }]},]} {...panResponders.panHandlers}>
                 <View style={styles.container}>
                     <TextIconButton
                         style={[styles.button, styles.close_button]}
                         onPress={() => {
-                            closeAnim.start()
+                            closeAnim.start(() => onClose())
                         }}
                         icon={<CloseIcon color={styles_.DARK_GRAY} size={28}/>}
                     />
@@ -77,6 +83,7 @@ const styles = StyleSheet.create({
         left: '2%',
         width: '96%',
         top: screenHeight/2, // Hard coded fix to modal filling entire screen
+        zIndex: 1200,
     },
     container: {
         backgroundColor: 'white',
@@ -89,10 +96,10 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'white',
+        backgroundColor: 'transparent',
         borderTopRightRadius: 20,
         borderTopLeftRadius: 20,
-        maxHeight: '100%',
+        maxHeight: '80%',
     },
     horizontalBar: {
         width: 100,

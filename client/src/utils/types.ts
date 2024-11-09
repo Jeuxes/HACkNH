@@ -1,12 +1,6 @@
 export enum LocationType { // TODO change these types!
-    ATHLETICS = 'Athletics', //General type, we'll change this later
-    BADMINTON = 'Badminton', // Followed by the other types of locations... that we'll change...
-    BASEBALL = 'Baseball',
-    BASKETBALL = 'Basketball',
-    BOXING = 'Boxing',
-    CRICKET = 'Cricket',
-    CYCLING = 'Cycling',
-    FUTSOL = 'Futsol',
+    SPORTS = 'Sports',
+    FOOD = 'Food',
     GOLF = 'Golf',
     ICE_HOCKEY = 'Ice Hockey',
     MMA = 'Mixed Martial Arts',

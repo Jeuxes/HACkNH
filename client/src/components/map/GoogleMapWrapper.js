@@ -1,10 +1,22 @@
-import React, {useState, useEffect}  from 'react';
-import {GoogleMap, LoadScript, Marker, Circle} from '@react-google-maps/api';
+import React, {useState, useEffect, useRef}  from 'react';
+import {GoogleMap, LoadScript, Marker} from '@react-google-maps/api';
 import {Image, StyleSheet} from "react-native";
-// import DeviceInfo from "react-native-device-info";
+import {SearchBar} from "./index";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
-const GoogleMapWrapper = ({ filteredLocations, radius, children }) => {
+const GoogleMapWrapper = ({ isFilterVisible, setFilterVisible, filteredLocations, children }) => {
   const [coordinates, setCoordinates] = useState({ lat: 43.1340, lng: -70.9264 });
+  const [map, setMap] = useState(null);
+  
+  const autocompleteRef = useRef(null);
+  const onLoad = (map) => setMap(map);
+  
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      console.log(place); // Do something with the place details
+    }
+  };
 
   useEffect(() => {
     (() => {
@@ -22,14 +34,15 @@ const GoogleMapWrapper = ({ filteredLocations, radius, children }) => {
           console.error('Error getting location:', error);
         }
       );
+      
     })();
-
   }, [coordinates, setCoordinates]);
 
   return (
     <LoadScript
       googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
       loadingElement={<p>Loading map...</p>}
+      libraries={["places"]}
       onError={(e) => console.error('Error loading Google Maps:', e)}
     >
       <GoogleMap
@@ -41,19 +54,14 @@ const GoogleMapWrapper = ({ filteredLocations, radius, children }) => {
           maxZoom: 20,
           fullscreenControl: false, // Disable fullscreen control
           disableDefaultUI: true, // Disable default UI elements
-      }}
+        }}
+        onLoad={onLoad}
       >
+        <SearchBar isFilterVisible={isFilterVisible} setFilterVisible={setFilterVisible}/>
         {children}
         <Marker
           position={coordinates}
           title="User Location"
-        />
-        <Circle
-          // style={{...styles.map_area}}
-          defaultCenter={coordinates}
-          radius={radius}
-          fillColor="rgba(28, 117, 241, 0.4)"
-          strokeColor="rgba(20, 59, 243, 0.8)"
         />
 
         {filteredLocations.map((group) => (

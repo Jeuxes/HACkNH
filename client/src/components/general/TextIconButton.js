@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity} from "react-native";
-import * as styles_ from "../styles";
+import * as styles_ from "../../styles";
 import React from "react";
 
 const TextIconButton = ({onPress, style, title, textStyle, icon, disabled }, props) => {
