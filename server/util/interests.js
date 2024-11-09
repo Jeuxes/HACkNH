@@ -37,6 +37,12 @@ export const allInterests = [
 export const packInterests = (interests) => {
     let packed = 0;
 
+    let unrecognized = interests.find((item) => !allInterests.includes(item))
+
+    if (unrecognized) {
+        console.warn(`WARNING: Unrecognized interest ${unrecognized}`)
+    }
+
     allInterests.forEach((item, index) => {
         if (interests.includes(item)) {
             packed |= (1 << index)
