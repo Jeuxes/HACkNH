@@ -30,12 +30,12 @@ function HomePage() {
   const features = [
     {
       title: "Interactive Maps",
-      description: "Explore our interactive maps that help you navigate with ease.",
+      description: "Explore our interactive maps that help you connect with Wildcats near you!.",
       image: "/images/feature1.jpeg"  // Ensure the image path is correct
     },
     {
       title: "Real-time Chat",
-      description: "Connect instantly with real-time chat for all your communication needs.",
+      description: "Connect instantly with other Wildcats.",
       image: "/images/feature2.jpg"
     },
     {
@@ -44,8 +44,8 @@ function HomePage() {
       image: "/images/profile_feature.png"
     },
     {
-      title: "24/7 Support",
-      description: "Get support anytime with our 24/7 dedicated help center.",
+      title: "Discover Popular Locations",
+      description: "Find new hotspots around UNH and Seacoast Area.",
       image: "/images/support_feature.png"
     }
   ];
