@@ -1,0 +1,8 @@
+{
+  "allowJs": true,
+  "esModuleInterop": true,
+  "compilerOptions": {
+    "allowJs": true,
+    "jsx": "react"
+  }
+}
