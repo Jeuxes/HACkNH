@@ -2,12 +2,11 @@ import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef} fro
 import { View, Text, Button, Image, TouchableOpacity, Modal, Animated, PanResponder, Dimensions, StyleSheet } from 'react-native';
 import * as styles_ from "../styles";
 import TextIconButton from "./TextIconButton";
-import {Ionicons} from "@expo/vector-icons";
-import {DrawerType} from "../types";
+import CloseIcon from '@mui/icons-material/Close';
 
 const screenHeight = Dimensions.get('window').height;
 
-const BottomDrawer = forwardRef(({ navigation, isVisible, children, onClose, }, ref) => {
+const BottomDrawer = forwardRef(({ isVisible, children, onClose, }, ref) => {
     const [currentSnap, setCurrentSnap] = useState(0);
     const panY = useRef(new Animated.Value(screenHeight)).current;
 
@@ -59,7 +58,7 @@ const BottomDrawer = forwardRef(({ navigation, isVisible, children, onClose, }, 
                         onPress={() => {
                             closeAnim.start()
                         }}
-                        icon={<Ionicons name="close-outline" color={styles_.DARK_GRAY} size={28}/>}
+                        icon={<CloseIcon color={styles_.DARK_GRAY} size={28}/>}
                     />
                     <Animated.View style={styles.horizontalBar} {...panResponders.panHandlers} />
                     {children}
@@ -77,7 +76,7 @@ const styles = StyleSheet.create({
         margin: 0,
         left: '2%',
         width: '96%',
-        top: screenHeight-40, // Hard coded fix to modal filling entire screen
+        top: screenHeight/2, // Hard coded fix to modal filling entire screen
     },
     container: {
         backgroundColor: 'white',

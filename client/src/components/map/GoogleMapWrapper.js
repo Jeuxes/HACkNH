@@ -1,10 +1,9 @@
 import React, {useState, useEffect}  from 'react';
 import {GoogleMap, LoadScript, Marker, Circle} from '@react-google-maps/api';
-import {Image} from "react-native";
-// import {Platform} from "react-native";
+import {Image, StyleSheet} from "react-native";
 // import DeviceInfo from "react-native-device-info";
 
-const GlobalGoogleMapWrapper = ({ filteredLocations, radius, children }) => {
+const GoogleMapWrapper = ({ filteredLocations, radius, children }) => {
   const [coordinates, setCoordinates] = useState({ lat: 43.1340, lng: -70.9264 });
 
   useEffect(() => {
@@ -34,9 +33,15 @@ const GlobalGoogleMapWrapper = ({ filteredLocations, radius, children }) => {
       onError={(e) => console.error('Error loading Google Maps:', e)}
     >
       <GoogleMap
-        mapContainerStyle={{ width: '100%', height: '100%' }}
+        mapContainerStyle={{ marginLeft: "10%", marginTop: "5%", width: '100%', height: '100%' }}
         center={coordinates}
-        zoom={12}
+        zoom={20}
+        options={{
+          minZoom: 18,
+          maxZoom: 20,
+          fullscreenControl: false, // Disable fullscreen control
+          disableDefaultUI: true, // Disable default UI elements
+      }}
       >
         {children}
         <Marker
@@ -56,7 +61,7 @@ const GlobalGoogleMapWrapper = ({ filteredLocations, radius, children }) => {
             key={group.id}
             position={group.location}
             title={group.name}
-            description={`Size: ${group.size}, Level: ${group.level}, Type: ${group.sportType}`}
+            description={`Size: ${group.size}, Level: ${group.level}, Type: ${group.locationType}`}
           >
             {/*<Image source={require("../assets/images/group_marker_blue.png")} style={{width: 40, height: 50}}/>*/}
           </Marker>
@@ -85,8 +90,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'blue',
   },
   map_slider: {
-    width: '80%', height: 40,
+    width: '80%',
+    height: 40,
   },
 });
 
-export default GlobalGoogleMapWrapper;
+export default GoogleMapWrapper;
