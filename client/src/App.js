@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NavigationBarLoggedOut from './components/NavBar.js';
-
+import MapsPage from './pages/MapsPage.js';
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
   const [data, setData] = useState(null);
@@ -24,6 +24,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/maps" element={<MapsPage />} />
 
           
         </Routes>

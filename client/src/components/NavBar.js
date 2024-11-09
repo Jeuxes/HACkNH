@@ -11,7 +11,7 @@ function NavigationBar() {
 
   const pages = [
     { name: "WheresWildacat", path: "/" },
-    { name: "map", path: "/map" },
+    { name: "map", path: "/maps" },
   ];
 
   const handleScroll = () => {
