@@ -21,20 +21,21 @@ const MapsPage = () => {
   const [isFilterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [locationsInRadius, setLocationsInRadius] = useState(null);
   const [locationError, setLocationError] = useState(null);
-  // const [coordinates, setCoordinates] = useState(DEFAULT_COORDS);
-  // const [selectedLocation, setSelectedLocation] = useState(null);
+  const [coordinates, setCoordinates] = useState(DEFAULT_COORDS);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [loadingSelectLoc, setLoadingSelectLoc] = useState(true);
-  const [modalVisible, setModalVisible] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
   const [waitingModalVisible, setWaitingModalVisible] = useState(false);
   const [matchModalVisible, setMatchModalVisible] = useState(false);
   const [waitingResponseModalVisible, setWaitingResponseModalVisible] = useState(false);
   
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
   
   const fetchGeolocation = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setCoordinates(coords);
         user.setCoordinates(coords);
         setLocationError(null); // Clear any previous error
         fetchNearbyLocations(coords);
@@ -46,25 +47,38 @@ const MapsPage = () => {
     );
   };
   
+  fetchGeolocation();
+  
   useEffect(() => {
     fetchGeolocation();
-    if (user.coordinates === DEFAULT_COORDS) {
+    
+    if (user.coordinates === DEFAULT_COORDS || loadingSelectLoc === true) {
       console.log('Initializing coords...');
       fetchGeolocation(); // Initial fetch
     }
     
-    if (locationsInRadius) {
-      console.log('displaying await location');
-      setLoadingSelectLoc(false);
-      setModalVisible(true);
+    const getNearby = () => {
+      fetchNearbyLocations(user.coordinates);
+    }
+  
+    socket.on('partnerAccept', () => {
+      console.log('partner Accepted!');
+      user.setCanEnterChat(true);
+      navigate('/chat');
+    })
+    
+    let geoNearby;
+    if (user.coordinates && locationsInRadius === null) {
+      geoNearby = setInterval(getNearby,1000) ;
     }
     
-    if (!user.selectedLocation || typeof user.selectedLocation === 'undefined') {
+    if (locationsInRadius !== null && user.selectedLocation === null) {
+      setLoadingSelectLoc(false);
       console.log('displaying location select');
       setModalVisible(true); // Show modal when locations are fetched
     }
     
-    if (user.awaitingMatch && !user.userMatchInterest ) {
+    if (user.awaitingMatch && user.selectedLocation !== null) {
       console.log('displaying match wait modal');
       setModalVisible(false); // location select modal
       setWaitingModalVisible(true);
@@ -82,31 +96,28 @@ const MapsPage = () => {
       setWaitingResponseModalVisible(true);
     }
     
-    if (user.canEnterChat) {
-      navigate('/chat');
-    }
-    
     // Set up timer for periodic geolocation updates
-    const geolocationTimer = setInterval(fetchGeolocation, 60000); // Update every 60 seconds
+    const geolocationTimer = setInterval(fetchGeolocation, 10000); // Update every 60 seconds
     // const geolocationTimer = setInterval(fetchGeolocation, 1000); // Update every 10 seconds
     
     return () => {
-      // clearInterval(geolocationTimerInit);
+      clearInterval(geoNearby);
       clearInterval(geolocationTimer); // Clear timer on unmount
-      // if (socket) {
-      //   socket.off('match');
-      // }
-      socket.off('match');
+      
     }
-  }, []);
+  }, [user, fetchGeolocation, locationsInRadius, user.awaitingMatchResponse, user.userMatchInterest,
+    loadingSelectLoc, modalVisible, waitingModalVisible, matchModalVisible, waitingResponseModalVisible,
+    user.canEnterChat, navigate
+  ]);
   
   const fetchNearbyLocations = (coords) => {
     if (typeof window.google !== 'undefined' && window.google.maps) {
+      if (window.google.maps.places) {
         console.log('fetching...');
         const service = new window.google.maps.places.PlacesService(
           document.createElement('div')
         );
-        
+  
         const request = {
           location: coords,
           radius: radius,
@@ -114,23 +125,21 @@ const MapsPage = () => {
         };
         service.nearbySearch(request, (results, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            
-            if (!locationsInRadius) {
-              console.log('setting...');
-              console.log(results);
-              setLocationsInRadius(results);
-              setModalVisible(true);
-            }
+            console.log('setting...');
+            console.log(results);
+            setLocationsInRadius(results);
+            setLoadingSelectLoc(false);
+            setModalVisible(true);
           } else {
             console.error("Places API request failed:", status);
           }
         });
+      }
     }
   };
   
   const handleLocationSelect = async (location) => {
     console.log('handling location select');
-    user.setSelectedLocation(location);
     setModalVisible(false); // Close modal after selection
     
     if (!user.userId) {
@@ -145,8 +154,8 @@ const MapsPage = () => {
         lat: location.geometry.location.lat(),
         lon: location.geometry.location.lng(),
       });
-      // setFindingMatch(true);
       user.setAwaitingMatch(true);
+      user.setSelectedLocation(location);
       socket.emit('startFind', user.userId);
       console.log(`Venue set to ${location.name}`);
     } catch (error) {
@@ -156,6 +165,7 @@ const MapsPage = () => {
   
   const handleMatchConfirm = (accept) => { // uses a bool to determine what to do
     socket.emit('matchResponse', user.userId, accept);
+    setMatchModalVisible(false);
     user.setAwaitingMatch(false);
     user.setAwaitingMatchResponse(true);
   }
@@ -185,7 +195,7 @@ const MapsPage = () => {
         setFilterDrawerVisible={setFilterDrawerVisible}
       />
   
-      {loadingSelectLoc && locationsInRadius === null && (
+      {loadingSelectLoc === true && (
         <View style={styles.overlay}>
           <View style={styles.overlayContent}>
             <Text style={styles.modalTitle}>Retrieving Locations...</Text>
@@ -234,7 +244,7 @@ const MapsPage = () => {
         </View>
       )}
   
-      {!loadingSelectLoc && modalVisible && (
+      {modalVisible && user.userMatchInterest === null && (
         <View style={styles.overlay}>
           <View style={styles.overlayContent}>
             <Text style={styles.modalTitle}>Are you currently at one of these nearby locations?</Text>
@@ -259,7 +269,7 @@ const MapsPage = () => {
         </View>
       )}
   
-      {matchModalVisible && (
+      {matchModalVisible && !waitingResponseModalVisible && (
         <View style={styles.overlay}>
           <View style={styles.overlayContent}>
             <Text style={styles.modalTitle}>Found Match!</Text>

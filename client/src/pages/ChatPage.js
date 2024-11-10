@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { Box, TextField, Button, Typography, List, ListItem, ListItemText, Divider, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useLocation } from 'react-router-dom';
+import {SocketContext} from "../components/providers/SocketProvider";
 
-function ChatPage({ socket, userId }) {
+function ChatPage({ userId }) {
+  const socket = useContext(SocketContext);
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');

@@ -145,8 +145,10 @@ export const matchUsers = async () => {
             // Now actually assign them to each other in activeUsers
             activeUsers[userA].matchUid = bestMatch
             activeUsers[userA].matched = true
+            activeUsers[userA].accepted = false
             activeUsers[bestMatch].matchUid = userA
             activeUsers[bestMatch].matched = true
+            activeUsers[bestMatch].accepted = false
 
             const userAInterests = hsUserInterests[userA]
             const bestMatchInterests = hsUserInterests[bestMatch]
@@ -189,14 +191,25 @@ export const startListener = (io) => {
         });
 
         socket.on('matchResponse', (uid, accept) => {
+            let matchUid;
             console.log(`User ${uid}: ${accept?"Accepted":"declined"}`);
             if (!accept) {
-                const matchUid = activeUsers[uid].matchUid
-                activeUsers[matchUid].socket.emit('partnerDisconnect')
-                activeUsers[matchUid].matched = false
-                delete activeUsers[matchUid]['matchUid']
-                delete activeUsers[uid]['matchUid']
+                matchUid = activeUsers[uid].matchUid
+                if (activeUsers[matchUid]) {
+                    activeUsers[matchUid].socket.emit('partnerDisconnect');
+                    activeUsers[matchUid].matched = false
+                    activeUsers[matchUid].accepted = false;
+                    delete activeUsers[matchUid]['matchUid']
+                    delete activeUsers[uid]['matchUid']
+                }
                 activeUsers[uid].matched = false
+                activeUsers[uid].accepted = false;
+            } else {
+                matchUid = activeUsers[uid].matchUid
+                if (activeUsers[matchUid].accepted) {
+                    activeUsers[matchUid].socket.emit('partnerAccept');
+                    activeUsers[uid].socket.emit('partnerAccept');
+                }
             }
         })
         
@@ -242,6 +255,7 @@ export const startListener = (io) => {
                     let matchUid = activeUsers[disconnectedUserId].matchUid
                     delete activeUsers[matchUid]['matchUid']
                     activeUsers[matchUid].matched = false
+                    activeUsers[matchUid].accepted = false;
                     activeUsers[matchUid].socket.emit('partnerDisconnect')
                 }
 

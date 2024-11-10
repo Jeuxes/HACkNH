@@ -20,6 +20,7 @@ export const UserProvider = ({children}) => {
   const [canEnterChat, setCanEnterChat] = useState(false);
   const [awaitingMatch, setAwaitingMatch] = useState(false);
   const [awaitingMatchResponse, setAwaitingMatchResponse] = useState(false);
+  const [confirmedChat, setConfirmedChat] = useState(false);
   
   const registerUser = (id) => {
     setUserId(id);
@@ -56,7 +57,13 @@ export const UserProvider = ({children}) => {
       setIsLoggedIn(false);
       setCanEnterChat(false);
     });
-  });
+    
+    return () => {
+      socket.off('match');
+    }
+  }, [socket, canEnterChat, setCanEnterChat, userMatchInterest, awaitingMatch, setAwaitingMatch, isLoggedIn,
+    setMatchInterest, confirmedChat, setConfirmedChat
+  ]);
 
   return (
     <UserContext.Provider value={{
@@ -71,6 +78,7 @@ export const UserProvider = ({children}) => {
       userMatchInterest, setMatchInterest,
       awaitingMatch, setAwaitingMatch,
       awaitingMatchResponse, setAwaitingMatchResponse,
+      confirmedChat, setConfirmedChat,
       registerUser
       }}>
       
