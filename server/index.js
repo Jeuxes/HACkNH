@@ -14,12 +14,12 @@ const port = 6969;  // HTTP port for the backend
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
-// CORS setup to allow requests from your front end on Netlify (allow HTTP)
 app.use(cors({
     origin: ['http://67307b3588db9e84d1409406--whereswildcat.netlify.app', 'http://whereswildcats.com'],  // Update to use HTTP
     methods: ['GET', 'POST'],
     credentials: true
 }));
+
 
 // Set up API routes
 app.use('/user', userRoutes);
