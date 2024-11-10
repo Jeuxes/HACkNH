@@ -1,6 +1,6 @@
 import generateUniqueId from 'generate-unique-id';
 import pool from './db.js';
-import { packInterests } from '../util/interests.js';
+import { packInterests, unpackInterests } from '../util/interests.js';
 
 export let activeUsers = {};
 export let hotspots = {};
@@ -84,6 +84,84 @@ export const setVenue = (req, res) => {
     }
 };
 
+// Stolen from https://stackoverflow.com/questions/43122082/efficiently-count-the-number-of-bits-in-an-integer-in-javascript
+const count1s32 = (i) => {
+    let count = 0;
+    i = i - ((i >> 1) & 0x55555555);
+    i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+    i = (i + (i >> 4)) & 0x0f0f0f0f;
+    i = i + (i >> 8);
+    i = i + (i >> 16);
+    count += i & 0x3f;
+    return count;
+}
+
+export const matchUsers = async () => {
+    for (const [hsName, hs] of Object.entries(hotspots)) {
+
+        // Maps uids to interests
+        let hsUserInterests = {}
+
+        for (const [uid, userData] of Object.entries(activeUsers)) {
+            if (!userData.matched && userData.currentVenue === hsName) {
+                dbrow = await getUser(uid)
+                hsUserInterests[uid] = dbrow.interests
+            }
+        }
+
+        const value = (interestA, interestB) => {
+            return count1s32(interestA & interestB)
+        }
+
+        let hsUsers = Object.keys(hsUserInterests)
+        while (hsUsers.length >= 2) {
+            // Select the first user and remove them from the list
+            let userA = hsUsers[0]
+            hsUsers.splice(0, 1)
+
+            // Find the value of every combination of the selected user and the other users at the venue
+            let pairValues = []
+            for (let i=0; i<hsUsers.length; i++) {
+                let userB = hsUsers[i]
+                let userAInterests = hsUserInterests[userA]
+                let userBInterests = hsUserInterests[userB]
+                pairValues.push(value(userAInterests, userBInterests))
+            }
+
+            // Find the partner that makes the highest value combination
+            let maxIndex = 0
+            let maxVal = pairValues[0]
+            for (let i=0; i<hsUsers.length; i++) {
+                if (pairValues[i] > maxVal) {
+                    maxIndex = i
+                    maxVal = pairValues[i]
+                }
+            }
+
+            // maxIndex should now be the index into hsUsers of the best matching user
+            let bestMatch = hsUsers[maxIndex]
+            hsUsers.splice(maxIndex, 1)
+
+            // Now actually assign them to each other in activeUsers
+            activeUsers[userA].matchUid = bestMatch
+            activeUsers[userA].matched = true
+            activeUsers[bestMatch].matchUid = userA
+            activeUsers[bestMatch].matched = true
+
+            const userAInterests = hsUserInterests[userA]
+            const bestMatchInterests = hsUserInterests[bestMatch]
+
+            const commonInterests = unpackInterests(userAInterests & bestMatchInterests)
+
+            activeUsers[userA].socket.emit('match', commonInterests)
+            activeUsers[bestMatch].socket.emit('match', commonInterests)
+        }
+
+
+    }
+}
+
+
 export const getHotspots = async (req, res) => {
     res.status(200).json(hotspots);
 };
@@ -100,8 +178,6 @@ export const startListener = (io) => {
                 activeUsers[uid] = {
                     firstName: userData.firstname,
                     lastName: userData.lastname,
-                    location: null,
-                    currentVenue: null,
                     socket: socket
                 };
             } else {
@@ -114,14 +190,35 @@ export const startListener = (io) => {
             });
         });
 
-        socket.on('sendMessage', (messageData) => {
-            const { senderId, recipientId, content, timestamp } = messageData;
-            console.log(`Message from User ${senderId} to User ${recipientId}: ${content} (Timestamp: ${timestamp})`);
+        socket.on('matchResponse', (responseData) => {
+            const { uid, accept } = responseData
 
-            if (activeUsers[recipientId]?.socket) {
-                activeUsers[recipientId].socket.emit('newMessage', { senderId, content, timestamp });
+            if (!accept) {
+                const matchUid = activeUsers[uid].matchUid
+                activeUsers[matchUid].socket.emit('partnerDisconnect')
+                activeUsers[matchUid].matched = false
+                delete activeUsers[matchUid]['matchUid']
+                delete activeUsers[uid]['matchUid']
+                activeUsers[uid].matched = false
+            }
+        })
+
+        socket.on('sendMessage', (messageData) => {
+            const { senderId, content, timestamp } = messageData
+
+            if (!activeUsers[senderId].matched) {
+                console.warn(`Warning: User ${senderId} tried to send a message but did not have a match, ignoring`)
+                return
+            }
+
+            let matchUid = activeUsers[senderId].matchUid
+
+            console.log(`Message from user ${senderId} to user ${matchUid}: ${content} (Timestamp: ${timestamp})`);
+
+            if (activeUsers[matchUid]?.socket) {
+                activeUsers[matchUid].socket.emit('newMessage', { senderId, content, timestamp });
             } else {
-                console.log(`User ${recipientId} is not connected.`);
+                console.log(`User ${matchUid} is not connected.`);
             }
         });
 
@@ -136,6 +233,13 @@ export const startListener = (io) => {
                     hotspots[venue].users > 1
                         ? hotspots[venue].users -= 1
                         : delete hotspots[venue];
+                }
+
+                if (activeUsers[disconnectedUserId].matched) {
+                    let matchUid = activeUsers[disconnectedUserId].matchUid
+                    delete activeUsers[matchUid]['matchUid']
+                    activeUsers[matchUid].matched = false
+                    activeUsers[matchUid].socket.emit('partnerDisconnect')
                 }
 
                 delete activeUsers[disconnectedUserId];
