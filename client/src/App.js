@@ -7,7 +7,7 @@ import MapsPage from './pages/MapsPage';
 import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
 
-
+// Use environment variables for flexibility in production and development
 export const PORT = 6969;
 const ADDRESS = 'localhost';
 export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
@@ -70,7 +70,6 @@ const App = () => {
         <Route path="/maps" element={userId ? <MapsPage userId={userId} /> : <Navigate to="/login" />} />
         <Route path="/chat" element={userId && canEnterChat ? <ChatPage socket={socket} userId={userId} /> : <Navigate to="/" />} />
       </Routes>
-
     </div>
   );
 };
