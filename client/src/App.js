@@ -68,7 +68,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onRegisterSuccess={handleRegisterSuccess} />} />
-        <Route path="/maps" element={userId ? <MapsPage userId={userId} /> : <Navigate to="/login" />} />
+        <Route path="/maps" element={userId ? <MapsPage socket={socket} userId={userId} /> : <Navigate to="/login" />} />
         <Route path="/chat" element={userId && canEnterChat ? <ChatPage socket={socket} userId={userId} /> : <Navigate to="/" />} />
       </Routes>
 
