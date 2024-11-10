@@ -2,7 +2,7 @@ import { createContext  } from 'react';
 import io from 'socket.io-client';
 // import { BroadcastChannel } from 'broadcast-channel';
 
-export const API_BASE_URL = `https://whereswildcat.com/user`;
+export const API_BASE_URL = `https://whereswildcat.com/`;
 export const SOCKET_URL = `wss://whereswildcat.com/socket.io/`;
 export const socket = io(SOCKET_URL, {withCredentials: true});
 
