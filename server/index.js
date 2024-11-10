@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
-import { startListener } from './controllers/userController.js';
+import { startListener, matchUsers } from './controllers/userController.js';
 
 const app = express();
 const port = 6969;
@@ -44,3 +44,5 @@ startListener(io);
 server.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
+
+setInterval(matchUsers, 15000)

@@ -11,7 +11,7 @@ export const allInterests = [
     'Science',
     'Literature',
     'History',
-    'Poltics/Current Affairs',
+    'Politics/Current Affairs',
     'Philosophy',
     'Technology & Innovation',
     'Business/Entrepreneurship',
