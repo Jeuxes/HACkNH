@@ -7,11 +7,9 @@ import MapsPage from './pages/MapsPage';
 import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
 
-// Use environment variables for flexibility in production and development
-export const PORT = 6969;
-export const API_BASE_URL = 'https://67307b3588db9e84d1409406--whereswildcat.netlify.app:6969';
-
-let socket = io('wss://67307b3588db9e84d1409406--whereswildcat.netlify.app', {withCredentials: true});
+// Use the server's IP for API and WebSocket URLs
+export const API_BASE_URL = 'https://3.91.144.23:6969'; // Use your server's IP for API calls
+let socket = io('wss://3.91.144.23:6969', { withCredentials: true }); // Use server's IP for WebSocket
 
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
@@ -27,7 +25,6 @@ const App = () => {
 
   const initializeSocket = (id) => {
     if (socket) {
-
       console.log("Registering user", id);
       socket.emit('register', id);
 
@@ -52,7 +49,6 @@ const App = () => {
       console.error('Error connecting to server:', error);
     }
   };
-
 
   useEffect(() => {
     const navBar = document.querySelector('#navbar');
