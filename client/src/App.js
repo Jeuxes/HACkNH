@@ -7,10 +7,10 @@ import MapsPage from './pages/MapsPage';
 import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
 
-
-export const PORT = 6969;
-export const API_BASE_URL = `http://localhost:${PORT}`;
-export const SOCKET_URL = `ws://localhost:${PORT}`; // Ensure WebSocket protocol
+// Use environment variables for flexibility in production and development
+export const PORT = process.env.REACT_APP_PORT;
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+export const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
 let socket;
 
@@ -71,7 +71,6 @@ const App = () => {
         <Route path="/maps" element={userId ? <MapsPage userId={userId} /> : <Navigate to="/login" />} />
         <Route path="/chat" element={userId && canEnterChat ? <ChatPage socket={socket} userId={userId} /> : <Navigate to="/" />} />
       </Routes>
-
     </div>
   );
 };
