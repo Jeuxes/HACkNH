@@ -15,8 +15,7 @@ const MapsPage = ({ userId }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
 
-  useEffect(() => {
-    // Request user's geolocation
+  const fetchGeolocation = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
@@ -29,6 +28,15 @@ const MapsPage = ({ userId }) => {
         setLocationError('Unable to access your location. Please allow location access or try again.');
       }
     );
+  };
+
+  useEffect(() => {
+    fetchGeolocation(); // Initial fetch
+
+    // Set up timer for periodic geolocation updates
+    const geolocationTimer = setInterval(fetchGeolocation, 60000); // Update every 60 seconds
+
+    return () => clearInterval(geolocationTimer); // Clear timer on unmount
   }, []);
 
   const fetchNearbyLocations = (coords) => {
