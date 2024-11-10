@@ -3,10 +3,13 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
+import { fileURLToPath } from 'url'; // Import fileURLToPath
 import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import { startListener } from './controllers/userController.js';
+
+// Define __dirname for ES module scope
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
