@@ -1,26 +1,48 @@
+// Import dependencies
 import express from 'express';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
 import cors from 'cors';
-import postRoutes from './routes/post.js';
+import bodyParser from 'body-parser';
+import userRoutes from './routes/user.js';
+import http from 'http';
+import { Server } from 'socket.io';
+import { startListener } from './controllers/userController.js';
 
-const app = express(); //App instance
+const app = express();
+const port = 6969;
 
+// Middleware setup
+app.use(bodyParser.json({ limit: '30mb', extended: true }));
+app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
+// Allow CORS from your production domain
+app.use(cors({
+    origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+    methods: ['GET', 'POST'],
+    credentials: true // Allow credentials sharing
+}));
 
-//Setup body-parser for requests
-app.use(bodyParser.json({limit : "30mb", extended: true}));
-app.use(bodyParser.urlencoded({limit : "30mb", extended: true}));
+// Routes
+app.use('/user', userRoutes);
 
-app.use(cors());
+app.get('/', (req, res) => {
+    res.send('hello world');
+    console.log('Root request received');
+});
 
-app.use('/posts', postRoutes);
-// https://www.mongodb.com/cloud/atlas
-const CONNECTION_URL = 'mongodb+srv://classmateoffical:tPLdpKWanVaOknuy@pmcluster0.gzf9ouu.mongodb.net/?retryWrites=true&w=majority&appName=PMCluster0';
-const PORT = process.env.PORT || 8000;
+// Create HTTP server and initialize WebSocket server
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+});
 
-mongoose.connect(CONNECTION_URL)
-    .then(() => app.listen(PORT, () => console.log('Server Running on port: ' + PORT)))
-    .catch((error) => console.log(error.message));
+// Initialize WebSocket listener
+startListener(io);
 
-
+// Start the server
+server.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+});

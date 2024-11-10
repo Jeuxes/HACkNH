@@ -1,7 +1,10 @@
+// api.js
+import { API_BASE_URL } from '../App';
+
 export const api = {
-  signup: async (userData) => {
+  register: async (userData) => {
     try {
-      const response = await fetch('/api/signup', {
+      const response = await fetch(`${API_BASE_URL}/user/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
@@ -9,61 +12,36 @@ export const api = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Signup failed');
+        console.log("Registration failed");
+        throw new Error(errorData.message || 'Registration failed');
       }
 
-      return await response.json();
+      const { userId } = await response.json();
+      return userId;
     } catch (error) {
+      console.error('Registration error:', error);
       throw error;
     }
   },
 
-  login: async (userData) => {
+  setVenue: async (venueData) => {
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch(`${API_BASE_URL}/user/setVenue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(venueData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
+        console.log("Failed to set venue");
+        throw new Error(errorData.message || 'Setting venue failed');
       }
 
       return await response.json();
     } catch (error) {
+      console.error('Error setting venue:', error);
       throw error;
     }
   },
-
-  checkHealth: async () => {
-    try {
-      const response = await fetch('/api/health');
-      if (!response.ok) {
-        throw new Error('Failed to fetch health status');
-      }
-      const data = await response.json();
-      return data.status;
-    } catch (error) {
-      console.error('Error fetching health status:', error);
-      throw error;
-    }
-  },
-
-  getListings: async () => {
-    try {
-      const response = await fetch('/api/listings');
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch listings');
-      }
-
-      return await response.json(); // Assuming it returns an array of listings
-    } catch (error) {
-      console.error('Error fetching listings:', error);
-      throw error;
-    }
-  }
 };

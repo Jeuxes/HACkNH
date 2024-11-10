@@ -1,38 +1,83 @@
 import React, { useState } from 'react';
-import { Container, Box, TextField, Button, Typography } from '@mui/material';
+import { Container, Box, TextField, Button, Typography, FormControlLabel, Checkbox, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/apiController';
 
-function LoginPage() {
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function LoginPage({ onRegisterSuccess }) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
+  const [interests, setInterests] = useState([]);
+  
+  const navigate = useNavigate(); // Initialize navigate
 
+  const interestOptions = {
+    music: [
+      { name: 'Pop Music' },
+      { name: 'Rock Music' },
+      { name: 'Hip-Hop/Rap Music' },
+      { name: 'EDM' },
+      { name: 'Classical Music' },
+      { name: 'Indie/Alternative Music' },
+    ],
+    academic: [
+      { name: 'Science' },
+      { name: 'Literature' },
+      { name: 'History' },
+      { name: 'Politics/Current Affairs' },
+      { name: 'Philosophy' },
+      { name: 'Technology & Innovation' },
+      { name: 'Business/Entrepreneurship' },
+      { name: 'Environmental Issues' },
+    ],
+    lifestyle: [
+      { name: 'Fitness' },
+      { name: 'Socializing' },
+      { name: 'Mental Health' },
+      { name: 'Gaming' },
+      { name: 'Streaming/Watching TV' },
+      { name: 'Travel' },
+      { name: 'Food' },
+      { name: 'Volunteer/Community Service' },
+    ],
+    other: [
+      { name: 'Art' },
+      { name: 'Music Production' },
+      { name: 'DIY Projects' },
+      { name: 'Sports' },
+    ],
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare data to send
     const userData = {
-      email: email.trim(),
-      password: password,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      interests,
     };
 
     try {
-      // Use the login API from apiController
-      const data = await api.login(userData);
-      console.log('Login successful:', data);
-      navigate('/');
+      const userId = await api.register(userData);
+      console.log('Registration successful with userId:', userId);
+      onRegisterSuccess(userId);  // Call parent function to store userId
+      navigate('/maps');          // Redirect to the maps page
     } catch (error) {
-      // Handle errors
-      console.error('Error:', error);
+      console.log('Error during registration:', error);
       setError(error.message);
     }
   };
 
+  const handleInterestChange = (name) => (e) => {
+    setInterests((prevInterests) =>
+      e.target.checked
+        ? [...prevInterests, name]
+        : prevInterests.filter((interest) => interest !== name)
+    );
+  };
+
   return (
-    <Container maxWidth="xs" sx={{ mt: 12, mb: 4 }}>
+    <Container maxWidth="sm" sx={{ mt: 8, mb: 4 }}>
       <Box
         sx={{
           p: 4,
@@ -43,7 +88,7 @@ function LoginPage() {
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom>
-          Login
+          Register
         </Typography>
         <Box
           component="form"
@@ -52,29 +97,52 @@ function LoginPage() {
             mt: 2,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: 3,
           }}
           noValidate
           autoComplete="off"
         >
           <TextField
-            label="Email"
+            label="First Name"
             variant="outlined"
             fullWidth
             required
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
           />
           <TextField
-            label="Password"
+            label="Last Name"
             variant="outlined"
-            type="password"
             fullWidth
             required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
           />
+
+          {Object.keys(interestOptions).map((category) => (
+            <Box key={category} sx={{ mt: 2 }}>
+              <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+                {category.charAt(0).toUpperCase() + category.slice(1)} Interests
+              </Typography>
+              <Grid container spacing={1}>
+                {interestOptions[category].map((interest) => (
+                  <Grid item xs={6} key={interest.name}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={interests.includes(interest.name)}
+                          onChange={handleInterestChange(interest.name)}
+                          name={interest.name}
+                        />
+                      }
+                      label={interest.name}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          ))}
+
           <Button
             variant="contained"
             color="primary"
@@ -82,7 +150,7 @@ function LoginPage() {
             type="submit"
             sx={{ mt: 2 }}
           >
-            Login
+            Register
           </Button>
           {error && (
             <Typography variant="body2" color="error" sx={{ mt: 1 }}>
@@ -90,9 +158,6 @@ function LoginPage() {
             </Typography>
           )}
         </Box>
-        <Typography variant="body2" sx={{ mt: 2 }}>
-          Don't have an account? <a href="/signup">Sign Up</a>
-        </Typography>
       </Box>
     </Container>
   );
