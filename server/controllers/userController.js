@@ -11,7 +11,7 @@ import {packInterests} from '../util/interests.js'
  *     lat: lat,
  *     long: long,
  *     currentVenue: "Venue Name (must match key in venues)",
- *     socketId: socketId
+ *     socket: socket
  *   }
  * }
  */
@@ -27,6 +27,15 @@ export let activeUsers = {}
  * }
  */
 export let hotspots = {}
+
+// To be called periodically
+// export const matchUsers = () => {
+//     for (const [hsName, hs] of Object.entries(hotspots)) {
+//         let users = []
+
+
+//     }
+// }
 
 
 const getUser = async (uid) => {
@@ -67,7 +76,7 @@ export const register = async (req, res) => {
       console.error(`Error registering user:`, req.body, err);
       res.status(422).json({ message: err.message });
     }
-  };
+};
 
   
   
@@ -135,10 +144,10 @@ export const startListener = (io) => {
                     lastName: userData.lastname,
                     location: null,
                     currentVenue: null,
-                    socketId: socket.id
+                    socket: socket
                 }
             } else {
-                activeUsers[uid].socketId = socket.id
+                activeUsers[uid].socket = socket
             }
 
             console.log(`User ${uid} is registered with socket ID: ${socket.id}`);
@@ -162,9 +171,16 @@ export const startListener = (io) => {
         // Handle user disconnect
         socket.on('disconnect', () => {
             const disconnectedUserId = Object.keys(activeUsers).find(
-                (uid) => activeUsers[uid].socketId === socket.id
+                (uid) => activeUsers[uid].socket.id === socket.id
             );
             if (disconnectedUserId) {
+                if (activeUsers[disconnectedUserId].currentVenue in hotspots) {
+                    if (hotspots[activeUsers[disconnectedUserId].currentVenue].users > 1) {
+                        hotspots[activeUsers[disconnectedUserId].currentVenue].users -= 1
+                    } else {
+                        delete hotspots[activeUsers[disconnectedUserId].currentVenue]
+                    }
+                }
                 delete activeUsers[disconnectedUserId];
                 console.log(`User ${disconnectedUserId} disconnected.`);
             }
