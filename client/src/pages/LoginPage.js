@@ -3,13 +3,13 @@ import { Container, Box, TextField, Button, Typography, FormControlLabel, Checkb
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/apiController';
 
-function LoginPage() {
-  const navigate = useNavigate();
-
+function LoginPage({ onRegisterSuccess }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
-  const [interests, setInterests] = useState([]); // Set interests as an array
+  const [interests, setInterests] = useState([]);
+  
+  const navigate = useNavigate(); // Initialize navigate
 
   const interestOptions = {
     music: [
@@ -47,23 +47,21 @@ function LoginPage() {
       { name: 'Sports' },
     ],
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("handleSubmit called");
 
     const userData = {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      interests, // Now interests is an array of selected interest names
+      interests,
     };
-
-    console.log("userData:", userData);
 
     try {
       const userId = await api.register(userData);
       console.log('Registration successful with userId:', userId);
-      navigate(`/chat/${userId}`);
+      onRegisterSuccess(userId);  // Call parent function to store userId
+      navigate('/maps');          // Redirect to the maps page
     } catch (error) {
       console.log('Error during registration:', error);
       setError(error.message);
@@ -73,8 +71,8 @@ function LoginPage() {
   const handleInterestChange = (name) => (e) => {
     setInterests((prevInterests) =>
       e.target.checked
-        ? [...prevInterests, name] // Add the selected interest
-        : prevInterests.filter((interest) => interest !== name) // Remove if unchecked
+        ? [...prevInterests, name]
+        : prevInterests.filter((interest) => interest !== name)
     );
   };
 

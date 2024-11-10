@@ -1,33 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, List, ListItem, ListItemText, Divider, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { useParams } from 'react-router-dom';
-import { io } from 'socket.io-client';
+import { useLocation } from 'react-router-dom';
 
-let socket;
-
-function ChatPage() {
-  const { userId } = useParams(); // Retrieve userId from route parameters
+function ChatPage({ socket, userId }) {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (isConnected && userId) {
-      // Initialize the socket connection
-      socket = io('http://localhost:6969');
-      
-      // Register the user with the server using userId
+    if (socket && userId) {
+      console.log("registering user in ChatPage", userId);
       socket.emit('register', userId);
 
-      // Listen for initial messages from the server
       socket.on('initialMessages', (initialMessages) => {
         setMessages(initialMessages);
       });
 
-      // Listen for new incoming messages from the server as JSON objects
       socket.on('newMessage', (messageData) => {
-        // Assuming messageData is a JSON object with 'name' and 'content'
         const parsedMessage = {
           name: messageData.name,
           content: messageData.content,
@@ -35,28 +25,24 @@ function ChatPage() {
         setMessages((prevMessages) => [...prevMessages, parsedMessage]);
       });
 
-      // Cleanup on component unmount
+      setIsConnected(true);
+
       return () => {
         socket.off('initialMessages');
         socket.off('newMessage');
         socket.disconnect();
       };
     }
-  }, [isConnected, userId]);
-
-  const handleConnect = () => {
-    setIsConnected(true);
-  };
+  }, [socket, userId]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
 
     const messageData = {
-      name: 'You', // Identifying the sender as 'You' for local messages
+      name: 'You',
       content: newMessage.trim(),
     };
 
-    // Emit the message as JSON to the server through WebSocket
     socket.emit('sendMessage', messageData);
     setNewMessage('');
     setMessages((prevMessages) => [...prevMessages, messageData]);
@@ -83,7 +69,6 @@ function ChatPage() {
         Direct Message
       </Typography>
 
-      {/* Messages display box */}
       <Box
         sx={{
           flex: 1,
@@ -117,7 +102,6 @@ function ChatPage() {
 
       <Divider sx={{ mb: 1 }} />
 
-      {/* Message input box at the bottom */}
       <Box
         sx={{
           display: 'flex',
@@ -152,21 +136,6 @@ function ChatPage() {
           {error}
         </Typography>
       )}
-
-      {/* Connection dialog for entering userId */}
-      <Dialog open={!isConnected} onClose={() => {}}>
-        <DialogTitle>Connect to Chat</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Connecting as user {userId}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleConnect} color="primary" variant="contained">
-            Connect
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

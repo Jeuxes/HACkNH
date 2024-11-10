@@ -1,7 +1,10 @@
+// api.js
+import { API_BASE_URL } from '../App';
+
 export const api = {
   register: async (userData) => {
     try {
-      const response = await fetch('/user/register', {
+      const response = await fetch(`${API_BASE_URL}/user/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
@@ -13,7 +16,7 @@ export const api = {
         throw new Error(errorData.message || 'Registration failed');
       }
 
-      const { userId } = await response.json(); // Expect userId in the response
+      const { userId } = await response.json();
       return userId;
     } catch (error) {
       console.error('Registration error:', error);
