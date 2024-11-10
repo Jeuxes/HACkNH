@@ -14,14 +14,14 @@ const port = 6969;
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
-// Allow CORS from your production domain
+// CORS setup to allow requests from your front end
 app.use(cors({
-    origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+    origin: ['http://whereswildcats.com', 'https://whereswildcats.com'],
     methods: ['GET', 'POST'],
-    credentials: true // Allow credentials sharing
+    credentials: true
 }));
 
-// Routes
+// Set up routes
 app.use('/user', userRoutes);
 
 app.get('/', (req, res) => {
@@ -33,13 +33,13 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+        origin: ['http://whereswildcats.com', 'https://whereswildcats.com'],
         methods: ['GET', 'POST'],
         credentials: true
     },
 });
 
-// Initialize WebSocket listener
+// Initialize WebSocket listener for custom handling
 startListener(io);
 
 // Start the server
