@@ -1,9 +1,9 @@
-// Import dependencies
+import https from 'https';
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import userRoutes from './routes/user.js';
-import http from 'http';
 import { Server } from 'socket.io';
 import { startListener } from './controllers/userController.js';
 
@@ -19,7 +19,6 @@ app.use(cors({
     credentials: true
 }));
 
-
 // Routes
 app.use('/user', userRoutes);
 
@@ -28,11 +27,17 @@ app.get('/', (req, res) => {
     console.log('Root request received');
 });
 
-// Create HTTP server and initialize WebSocket server
-const server = http.createServer(app);
+// Load SSL certificates
+const httpsOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/whereswildcat.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/whereswildcat.com/fullchain.pem')
+};
+
+// Create HTTPS server and initialize WebSocket server
+const server = https.createServer(httpsOptions, app);
 const io = new Server(server, {
     cors: {
-        origin: 'https://whereswildcat.com', // Allow production client domain
+        origin: 'https://whereswildcat.com',
         methods: ['GET', 'POST'],
         credentials: true
     },
@@ -43,5 +48,5 @@ startListener(io);
 
 // Start the server
 server.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Secure server listening on port ${port}`);
 });
