@@ -14,10 +14,11 @@ const port = 6969;
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow client origin
+    origin: 'http://whereswildcats.com', // Allow production client domain
     methods: ['GET', 'POST'],
-    credentials: true // Allow credentials sharing
+    credentials: true
 }));
+
 
 // Routes
 app.use('/user', userRoutes);
@@ -31,7 +32,7 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:3000', // Specific client origin
+        origin: 'http://whereswildcats.com', // Allow production client domain
         methods: ['GET', 'POST'],
         credentials: true
     },
