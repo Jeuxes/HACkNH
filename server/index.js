@@ -2,16 +2,10 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import path from 'path';
-import { fileURLToPath } from 'url'; // Import fileURLToPath
 import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import { startListener } from './controllers/userController.js';
-
-// Define __dirname for ES module scope
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 6969;
@@ -20,15 +14,12 @@ const port = 6969;
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
-// CORS setup to allow requests from your front end
+// CORS setup to allow requests from your front end on Netlify
 app.use(cors({
-    origin: ['http://whereswildcats.com', 'https://whereswildcats.com'],
+    origin: ['https://your-netlify-site.netlify.app', 'https://whereswildcats.com'],  // Replace with your actual Netlify URL
     methods: ['GET', 'POST'],
     credentials: true
 }));
-
-// Serve static files from the client build directory
-app.use(express.static(path.join(__dirname, 'build')));
 
 // Set up API routes
 app.use('/user', userRoutes);
@@ -38,16 +29,11 @@ app.get('/', (req, res) => {
     console.log('Root request received');
 });
 
-// Catch-all route to serve `index.html` for client-side routes
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
 // Create HTTP server and initialize WebSocket server
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ['http://whereswildcats.com', 'https://whereswildcats.com'],
+        origin: ['https://your-netlify-site.netlify.app', 'https://whereswildcats.com'],  // Replace with your actual Netlify URL
         methods: ['GET', 'POST'],
         credentials: true
     },
