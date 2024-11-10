@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../hooks/socket';
 export const api = {
   register: async (userData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
+      const response = await fetch(`${API_BASE_URL}/user/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
@@ -27,7 +27,7 @@ export const api = {
 
   setVenue: async (venueData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/setVenue`, {
+      const response = await fetch(`${API_BASE_URL}/user/setVenue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(venueData),
