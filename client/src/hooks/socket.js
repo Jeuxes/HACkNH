@@ -2,10 +2,8 @@ import { createContext  } from 'react';
 import io from 'socket.io-client';
 // import { BroadcastChannel } from 'broadcast-channel';
 
-export const PORT = 6969;
-const ADDRESS = 'whereswildcat.com';
 export const API_BASE_URL = `https://whereswildcat.com/user`;
-export const SOCKET_URL = `wss://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
+export const SOCKET_URL = `wss://whereswildcat.com/socket.io/`;
 export const socket = io(SOCKET_URL, {withCredentials: true});
 
 // const PORT = 6969;
