@@ -1,7 +1,10 @@
+// api.js
+import { API_BASE_URL } from '../hooks/socket';
+// import { API_BASE_URL } from '../App';
+
 export const api = {
   register: async (userData) => {
     try {
-      // Remove '/user' from this path
       const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,7 +27,6 @@ export const api = {
 
   setVenue: async (venueData) => {
     try {
-      // Remove '/user' from this path
       const response = await fetch(`${API_BASE_URL}/setVenue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
