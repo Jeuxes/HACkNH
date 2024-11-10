@@ -42,7 +42,6 @@ const getUser = async (uid) => {
 
 export const register = async (req, res) => {
     const { firstName, lastName, interests } = req.body; // Destructure with proper names
-    console.log("asdfasdf")
     try {
       // Generate unique user ID
       const uid = generateUniqueId();

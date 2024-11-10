@@ -1,45 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import NavigationBarLoggedOut from './components/NavBar.js';
-import MapsPage from './pages/MapsPage.js';
-import ChatPage from './pages/ChatPage.js';
+import NavigationBar from './components/NavBar';
+import MapsPage from './pages/MapsPage';
+import ChatPage from './pages/ChatPage';
+import { io } from 'socket.io-client';
+
+export const PORT = 6969;
+export const API_BASE_URL = `http://localhost:${PORT}`;
+let socket;
+
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
-  const [data, setData] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state for login status
+  const [canEnterChat, setCanEnterChat] = useState(false); // New state for chat entry condition
 
-  // Get the height of the navbar when the component mounts
+  const handleRegisterSuccess = (id) => {
+    setUserId(id);
+    setIsLoggedIn(true); // Set login status to true upon successful registration
+    initializeSocket(id);
+  };
+
+  const initializeSocket = (id) => {
+    if (!socket) {
+      socket = io(`http://localhost:${PORT}`);
+      console.log("registering user", id);
+      socket.emit('register', id);
+
+      socket.on('specificString', () => {
+        setCanEnterChat(true); // Enable chat access upon receiving specific string
+      });
+
+      socket.on('disconnect', () => {
+        setCanEnterChat(false);
+      });
+    }
+  };
+
   useEffect(() => {
     const navBar = document.querySelector('#navbar');
     if (navBar) {
-      const height = navBar.offsetHeight;
-      setNavBarHeight(height);
+      setNavBarHeight(navBar.offsetHeight);
     }
   }, []);
 
   return (
     <div>
-      <Router>
-        <NavigationBarLoggedOut navBarHeight={navBarHeight} />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/maps" element={<MapsPage />} />
-          <Route path="/chat" element={<ChatPage />} />
-
-
-          
-        </Routes>
-      </Router>
-
-      {/* Render the fetched data */}
-      {data && (
-        <div>
-          <p>Message from Flask: {data.message}</p>
-          <p>Status: {data.status}</p>
-        </div>
-      )}
+      <NavigationBar navBarHeight={navBarHeight} isLoggedIn={isLoggedIn} canEnterChat={canEnterChat} />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage onRegisterSuccess={handleRegisterSuccess} />} />
+        <Route path="/maps" element={<MapsPage />} />
+        <Route path="/chat" element={<ChatPage socket={socket} userId={userId} />} />
+      </Routes>
     </div>
   );
 };
