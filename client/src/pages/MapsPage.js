@@ -48,17 +48,16 @@ const MapsPage = () => {
   
   useEffect(() => {
     fetchGeolocation();
-    // if (user.coordinates === DEFAULT_COORDS) {
-    //   console.log('Initializing coords...');
-    //   fetchGeolocation(); // Initial fetch
-    // }
+    if (user.coordinates === DEFAULT_COORDS) {
+      console.log('Initializing coords...');
+      fetchGeolocation(); // Initial fetch
+    }
     
-    // if (locationsInRadius) {
-    //   console.log('displaying await location');
-    //   setLoadingSelectLoc(false);
-    //   // fetchGeolocation();
-    //   setModalVisible(true);
-    // }
+    if (locationsInRadius) {
+      console.log('displaying await location');
+      setLoadingSelectLoc(false);
+      setModalVisible(true);
+    }
     
     if (!user.selectedLocation || typeof user.selectedLocation === 'undefined') {
       console.log('displaying location select');
