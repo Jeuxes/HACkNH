@@ -9,9 +9,9 @@ import { io } from 'socket.io-client';
 
 // Use environment variables for flexibility in production and development
 export const PORT = 6969;
-export const API_BASE_URL = 'https://whereswildcats.com:6969';
+export const API_BASE_URL = 'https://67307b3588db9e84d1409406--whereswildcat.netlify.app:6969';
 
-let socket = io('wss://whereswildcats.com', {withCredentials: true});
+let socket = io('wss://67307b3588db9e84d1409406--whereswildcat.netlify.app', {withCredentials: true});
 
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
