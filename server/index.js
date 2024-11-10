@@ -7,6 +7,8 @@ import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import { startListener } from './controllers/userController.js';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 6969;
