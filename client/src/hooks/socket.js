@@ -4,8 +4,8 @@ import io from 'socket.io-client';
 
 export const PORT = 6969;
 const ADDRESS = 'whereswildcat.com';
-export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
-export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
+export const API_BASE_URL = `https://${ADDRESS}:${PORT}`;
+export const SOCKET_URL = `wss://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
 export const socket = io(SOCKET_URL, {withCredentials: true});
 
 // const PORT = 6969;
