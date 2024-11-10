@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 // import { BroadcastChannel } from 'broadcast-channel';
 
 export const PORT = 6969;
-const ADDRESS = 'localhost';
+const ADDRESS = 'whereswildcat';
 export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
 export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
 export const socket = io(SOCKET_URL, {withCredentials: true});
