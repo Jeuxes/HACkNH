@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Typography,
   Container,
@@ -9,11 +9,8 @@ import {
   CardContent,
   CardMedia,
 } from "@mui/material";
-import LoginIcon from '@mui/icons-material/Login'; // Icon for the login/sign up button
-import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Icon for the health check button
-import { api } from "../services/apiController";
+import LoginIcon from '@mui/icons-material/Login';
 import "../styling/HomePage.css";
-
 
 const features = [
   {
@@ -35,23 +32,8 @@ const features = [
     image: "/path-to-image-4.jpg"
   }
 ];
+
 function HomePage() {
-  const [healthStatus, setHealthStatus] = useState("");
-
-  const checkHealth = async () => {
-    try {
-      const status = await api.checkHealth();
-      setHealthStatus(status);
-    } catch (error) {
-      console.error("Error fetching health status:", error);
-      setHealthStatus("Error fetching health status");
-    }
-  };
-
-  const features = [
-    
-  ];
-
   return (
     <Container>
       {/* Top Section */}
@@ -60,37 +42,21 @@ function HomePage() {
           Welcome to Where's Wildcat
         </Typography>
         
-        <Box className="button-box" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 4 }}>
+        <Box
+          className="button-box"
+          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, mt: 4 }}
+        >
           <Button
             className="button-1"
             variant="contained"
             color="primary"
             size="large"
-            href="/signup"
+            href="/login" // Update to route to the sign-in page
             startIcon={<LoginIcon />}
           >
-            Sign Up Now
-          </Button>
-          <Button
-            className="button-2"
-            variant="outlined"
-            color="secondary"
-            size="large"
-            onClick={checkHealth}
-            startIcon={<HealthAndSafetyIcon />}
-          >
-            Check Server Health
+            Sign In
           </Button>
         </Box>
-        {healthStatus && (
-          <Typography
-            variant="body1"
-            className="health-status"
-            sx={{ mt: 4 }}
-          >
-            Server Health Status: {healthStatus}
-          </Typography>
-        )}
       </Box>
 
       {/* Bottom Section - Features */}
@@ -103,11 +69,11 @@ function HomePage() {
                   className="feature-image"
                   component="img"
                   image={feature.image}
-                  alt={feature.title}
+                  alt={feature.title || "Feature Image"}
                 />
                 <CardContent>
                   <Typography variant="h5" component="div" gutterBottom>
-                    {feature.title}
+                    {feature.title || "Feature"}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
                     {feature.description}

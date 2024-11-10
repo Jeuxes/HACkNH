@@ -1,126 +1,119 @@
-import {ImageBackground, View, Image, Text, StyleSheet, TouchableOpacity, TextInput} from 'react-native';
 import React, { useState, useEffect } from 'react';
-import DeviceInfo from 'react-native-device-info';
+import { View, StyleSheet, Text, TouchableOpacity, FlatList } from 'react-native';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import {Picker} from '@react-native-picker/picker';
-import {Slider} from "@mui/material";
-import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
-import SearchIcon from '@mui/icons-material/Search';
-import BottomDrawer from "../components/BottomDrawer";
-import TextIconButton from "../components/TextIconButton";
-import {GoogleMapWrapper, SearchBar, FilterDrawerContent} from "../components/map";
-import { LocationType } from "../utils/types";
+import SearchBar from "../components/map/SearchBar";
 import * as styles_ from "../styles";
 
-const hardcode_location = [
-  {
-    id: 1,
-    name: 'Hop&Grind',
-    locationType: LocationType.ATHLETICS, //FIXME
-    location: {
-      lat: 43.1979,
-      lng: -70.8737,
-    },
-  }
-];
-
-function getDeviceType() {
-  try {
-    const deviceType = DeviceInfo.getDeviceType();
-
-    switch (deviceType) {
-      case 'phone':
-        return 'Phone';
-      case 'tablet':
-        return 'iPad';
-      case 'computer':
-        return 'Computer';
-      default:
-        return 'Unknown';
-    }
-  } catch (error) {
-    console.error('Error determining device type:', error);
-    return 'Unknown';
-  }
-}
-
 const MapsPage = () => {
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [selectedTypes, setSelectedTypes] = useState([]); // State to store the selected types
-  const [radius, setRadius] = useState(8040); // Default radius in meters
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [radius, setRadius] = useState(91.44); // 300 feet in meters
   const [isFilterDrawerVisible, setFilterDrawerVisible] = useState(false);
-  const [isGroupDrawerVisible, setGroupDrawerVisible] = useState(false);
-  const [locationsInRadius, setLocationsInRadius] = useState(hardcode_location);
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  console.log('Google Maps API Key:', process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
-  // FIXME need to update this
-  const locationTypes = Object.values(LocationType).filter(type => type !== "SKIING" && type !== LocationType.ALL_SPORTS);
+  const [locationsInRadius, setLocationsInRadius] = useState([]);
+  const [coordinates, setCoordinates] = useState({ lat: 43.1340, lng: -70.9264 });
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setCoordinates(coords);
+        fetchNearbyLocations(coords);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+      }
+    );
   }, []);
 
-  const localLocationTypes = [...new Set(locationsInRadius.map((group) => group.locationType))];
+  const fetchNearbyLocations = (coords) => {
+    const service = new window.google.maps.places.PlacesService(
+      document.createElement('div')
+    );
+    const request = {
+      location: coords,
+      radius: radius,
+      type: ['restaurant', 'store', 'point_of_interest'], // Example types; adjust as needed
+    };
 
-  let filteredLocations = []
-  console.log(`Is selected? ${selectedLocation}`)
-  if (selectedLocation < 0) {
-    filteredLocations = locationsInRadius;
-  } else {
-    locationsInRadius.map(group => {
-      console.log(group)
-      if (group.locationType === selectedLocation) {
-        filteredLocations.push(group);
+    service.nearbySearch(request, (results, status) => {
+      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+        setLocationsInRadius(results);
+        setModalVisible(true); // Show modal when locations are fetched
+      } else {
+        console.error("Places API request failed:", status);
       }
     });
-  }
-  console.log(filteredLocations);
-
-  const handleTypeSelect = (type) => {
-    // Check if the type is already selected
-    if (selectedTypes.includes(type)) {
-      // If selected, remove it from the array
-      setSelectedTypes(selectedTypes.filter(selectedType => selectedType !== type));
-    } else {
-      // If not selected, add it to the array
-      setSelectedTypes([...selectedTypes, type]);
-    }
   };
 
-  const filterButtonProps = {
-    isExpanded: isExpanded,
-    setIsExpanded: () => setIsExpanded,
-    locationTypes: locationTypes,
-    selectedTypes: selectedTypes,
-    handleTypeSelect: () => handleTypeSelect
-  }
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
+    setModalVisible(false); // Close modal after selection
+  };
+
+  const renderLocationItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.locationItem}
+      onPress={() => handleLocationSelect(item)}
+    >
+      <Text style={styles.locationText}>{item.name}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <div style={{ width: '90vw', height: '90vh' }}>
-      <SearchBar isFilterDrawerVisible={isFilterDrawerVisible} setFilterDrawerVisible={setFilterDrawerVisible} />
-      <View style={{flex: 1, width: '90vw', height: '90vh', alignItems: 'center', justifyContent: 'center',}}>
-        <Picker
-          mode="dropdown"
-          selectedValue={selectedLocation}
-          onValueChange={(itemValue) => setSelectedLocation(itemValue)}
-          // style={styles.picker}
+      <SearchBar 
+        isFilterDrawerVisible={isFilterDrawerVisible} 
+        setFilterDrawerVisible={setFilterDrawerVisible} 
+      />
+      <View style={styles.mapContainer}>
+        <LoadScript
+          googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
+          libraries={['places']} // Add 'places' library for Places API
+          loadingElement={<p>Loading map...</p>}
+          onError={(e) => console.error('Error loading Google Maps:', e)}
         >
-          <Picker.Item label="All Sports" value={-1} />
-          {Object.values(LocationType).map((sport) => ( // FIXME!!!!!
-            localLocationTypes.forEach((grp_type) => (
-              grp_type === sport? <Picker.Item key={sport} label={sport} value={sport} />:null
-            ))
-          ))}
-        </Picker>
-        <GoogleMapWrapper filteredLocations={filteredLocations}/>
-        <BottomDrawer
-          setVisible={setFilterDrawerVisible}
-          isVisible={isFilterDrawerVisible}
-          onClose={() => setFilterDrawerVisible(false)}
-        >
-          <FilterDrawerContent{...filterButtonProps}/>
-        </BottomDrawer>
+          <GoogleMap
+            mapContainerStyle={{ marginLeft: "10%", marginTop: "5%", width: '100%', height: '100%' }}
+            center={coordinates}
+            zoom={18}
+            options={{
+              minZoom: 18,
+              maxZoom: 20,
+              fullscreenControl: false,
+              disableDefaultUI: true,
+            }}
+          >
+            {/* Display marker only when a location is selected */}
+            {selectedLocation && (
+              <Marker
+                position={{
+                  lat: selectedLocation.geometry.location.lat(),
+                  lng: selectedLocation.geometry.location.lng(),
+                }}
+                title={selectedLocation.name}
+              />
+            )}
+          </GoogleMap>
+        </LoadScript>
       </View>
+
+      {/* Custom Overlay for Location Selection */}
+      {modalVisible && (
+        <View style={styles.overlay}>
+          <View style={styles.overlayContent}>
+            <Text style={styles.modalTitle}>Are you currently at one of these nearby locations?</Text>
+            <FlatList
+              data={locationsInRadius}
+              keyExtractor={(item) => item.place_id}
+              renderItem={renderLocationItem}
+            />
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </div>
   );
 };
@@ -128,84 +121,57 @@ const MapsPage = () => {
 export default MapsPage;
 
 const styles = StyleSheet.create({
-  center: {
+  mapContainer: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  container: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  image: {
-    height: 'auto', width: 'auto',
-    borderRadius: 10,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: '500',
-    marginTop: 0,
-    marginBottom: 10,
-    borderRadius: 15, height: 50
-  },
-  header_2: {
-    fontSize: 24, fontWeight: '800',
-    marginHorizontal: 20, marginTop: 10, marginBottom: 10,
-    textAlign: 'left', color: styles_.PRIMARY_COLOR,
-  },
-  group_name: {
-    fontSize: 24, fontWeight: '700', textAlign: 'left',
-    marginTop: 10, marginBottom: 10, paddingRight: 20,
-  },
-  button: {
-    borderWidth: 1.4,
-    borderColor: styles_.WHITE, backgroundColor: styles_.WHITE,
-    shadowColor: styles_.BLACK, shadowOpacity: 0.2,
-    shadowRadius: 5, shadowOffset : { width: 0, height: 4}, elevation: 2,
-  },
-  sports_filter_button: {
-    width: 'auto', height: 40,
-    padding: 10, marginVertical: 5,
-    borderRadius: 30, marginHorizontal: 5,
-  },
-  moreButton: {
-    // Style for the "..." button
-    fontSize: 20,
-    color: '#007bff', // Example color
-    padding: 10,
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  user: {
-    width: 43,
-    height: 64
-  },
-  group: {
-    width: 40,
-    height: 50,
-    marginBottom: 10,
-  },
-  picker: {
-    width: 200,
-    height: 140,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    top: 100,
-    zIndex: 10,
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 30,
-    margin: 16
+  overlayContent: {
+    width: '80%',
+    maxHeight: '60%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
   },
-  desc: {
-    color: styles_.GRAY,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  locationItem: {
+    padding: 15,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  locationText: {
+    fontSize: 16,
+  },
+  closeButton: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
