@@ -84,6 +84,16 @@ export const setVenue = (req, res) => {
     }
 };
 
+export const testConnection = (req, res) => {
+    try {
+        // Check if the server is up and running
+        res.status(200).json({ message: 'Server is up and running' });
+    } catch (error) {
+        console.error('Error during connection test:', error);
+        res.status(500).json({ message: 'Server error during connection test' });
+    }
+};
+
 export const getHotspots = async (req, res) => {
     res.status(200).json(hotspots);
 };
