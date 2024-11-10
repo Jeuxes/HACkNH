@@ -43,11 +43,24 @@ const App = () => {
     }
   };
 
+  const testConnection = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/`, { method: 'GET' });
+      const data = await response.text();
+      console.log('Server response:', data);
+    } catch (error) {
+      console.error('Error connecting to server:', error);
+    }
+  };
+
+
   useEffect(() => {
     const navBar = document.querySelector('#navbar');
     if (navBar) {
       setNavBarHeight(navBar.offsetHeight);
     }
+
+    testConnection();
 
     // Clean up WebSocket on unmount
     return () => {
@@ -58,6 +71,7 @@ const App = () => {
       }
     };
   }, []);
+
 
   return (
     <div>
