@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
 // CORS setup to allow requests from your front end on Netlify
 app.use(cors({
-    origin: ['https://whereswildcats.com'],  // Replace with your actual Netlify URL
+    origin: ['https://67307b3588db9e84d1409406--whereswildcat.netlify.app', 'https://whereswildcats.com'],  // Allow both the Netlify URL and the root domain
     methods: ['GET', 'POST'],
     credentials: true
 }));
@@ -28,7 +28,7 @@ app.use('/user', userRoutes);
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ['https://whereswildcats.com'],  // Replace with your actual Netlify URL
+        origin: ['https://67307b3588db9e84d1409406--whereswildcat.netlify.app', 'https://whereswildcats.com'],  // Allow both the Netlify URL and the root domain
         methods: ['GET', 'POST'],
         credentials: true
     },
