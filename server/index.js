@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import path from 'path';
 import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -21,12 +22,20 @@ app.use(cors({
     credentials: true
 }));
 
-// Set up routes
+// Serve static files from the client build directory
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Set up API routes
 app.use('/user', userRoutes);
 
 app.get('/', (req, res) => {
     res.send('hello world');
     console.log('Root request received');
+});
+
+// Catch-all route to serve `index.html` for client-side routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 // Create HTTP server and initialize WebSocket server
