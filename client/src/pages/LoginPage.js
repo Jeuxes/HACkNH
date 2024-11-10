@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import { Container, Box, TextField, Button, Typography, FormControlLabel, Checkbox, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/apiController';
+import {UserContext} from "../components/providers/UserProvider";
 
 function LoginPage({ onRegisterSuccess }) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const user = useContext(UserContext);
   const [error, setError] = useState('');
   const [interests, setInterests] = useState([]);
   
@@ -52,14 +52,18 @@ function LoginPage({ onRegisterSuccess }) {
     e.preventDefault();
 
     const userData = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      firstName: user.firstName.trim(),
+      lastName: user.lastName.trim(),
       interests,
     };
 
     try {
       const userId = await api.register(userData);
       console.log('Registration successful with userId:', userId);
+      user.setFirstName(userData.firstName);
+      user.setLastName(userData.lastName);
+      user.setInterestList(interests);
+      user.setUserId(userId);
       onRegisterSuccess(userId);  // Call parent function to store userId
       navigate('/maps');          // Redirect to the maps page
     } catch (error) {
@@ -74,6 +78,10 @@ function LoginPage({ onRegisterSuccess }) {
         ? [...prevInterests, name]
         : prevInterests.filter((interest) => interest !== name)
     );
+    user.setInterestList({setInterestList: (prevInterests) =>
+        e.target.checked
+          ? [...prevInterests, name]
+          : prevInterests.filter((interest) => interest !== name)});
   };
 
   return (
@@ -107,16 +115,16 @@ function LoginPage({ onRegisterSuccess }) {
             variant="outlined"
             fullWidth
             required
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={user.firstName}
+            onChange={(e) => user.setFirstName(e.target.value)}
           />
           <TextField
             label="Last Name"
             variant="outlined"
             fullWidth
             required
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            value={user.lastName}
+            onChange={(e) => user.setLastName(e.target.value)}
           />
 
           {Object.keys(interestOptions).map((category) => (

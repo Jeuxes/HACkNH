@@ -104,7 +104,7 @@ export const matchUsers = async () => {
 
         for (const [uid, userData] of Object.entries(activeUsers)) {
             if (!userData.matched && userData.currentVenue === hsName) {
-                dbrow = await getUser(uid)
+                const dbrow = await getUser(uid)
                 hsUserInterests[uid] = dbrow.interests
             }
         }
@@ -156,8 +156,6 @@ export const matchUsers = async () => {
             activeUsers[userA].socket.emit('match', commonInterests)
             activeUsers[bestMatch].socket.emit('match', commonInterests)
         }
-
-
     }
 }
 
@@ -190,9 +188,8 @@ export const startListener = (io) => {
             });
         });
 
-        socket.on('matchResponse', (responseData) => {
-            const { uid, accept } = responseData
-
+        socket.on('matchResponse', (uid, accept) => {
+            console.log(`User ${uid}: ${accept?"Accepted":"declined"}`);
             if (!accept) {
                 const matchUid = activeUsers[uid].matchUid
                 activeUsers[matchUid].socket.emit('partnerDisconnect')
@@ -202,6 +199,12 @@ export const startListener = (io) => {
                 activeUsers[uid].matched = false
             }
         })
+        
+        socket.on('startFind', async (userId) => {
+            console.log(`${userId} initiated find...`);
+            const result = await matchUsers();
+            console.log(result);
+        });
 
         socket.on('sendMessage', (messageData) => {
             const { senderId, content, timestamp } = messageData

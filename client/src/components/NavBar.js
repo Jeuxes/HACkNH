@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useContext} from "react";
+import {Text} from "react-native";
 import { Link, useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Button, Box } from "@mui/material";
 import "../styling/NavBar.css";
+import {UserContext} from "./providers/UserProvider";
 
-function NavigationBar({ isLoggedIn, canEnterChat }) { // Receive isLoggedIn as a prop
+const NavigationBar = () => { // Receive isLoggedIn as a prop
+  const user = useContext(UserContext);
   const location = useLocation();
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const scrollThreshold = 10;
 
   const pages = [
-    { name: "Map", path: "/maps", visible: isLoggedIn }, // Show only if logged in
-    { name: "Chat", path: "/chat", visible: canEnterChat } // Show only if canEnterChat is true
+    { name: "Map", path: "/maps", visible: user.isLoggedIn }, // Show only if logged in
+    { name: "Chat", path: "/chat", visible: user.canEnterChat } // Show only if canEnterChat is true
   ];
 
   const handleScroll = () => {
@@ -69,18 +72,11 @@ function NavigationBar({ isLoggedIn, canEnterChat }) { // Receive isLoggedIn as 
               )
           )}
         </Box>
-        <Button
-          component={Link}
-          to="/login"
-          color="inherit"
-          sx={{
-            textDecoration: 'none',
-            fontSize: '1rem',
-            marginLeft: 'auto'
-          }}
-        >
-          Login
-        </Button>
+        {(user.firstName) && (
+          <Text>
+            Hello "{user.firstName}"
+          </Text>
+        )}
       </Toolbar>
     </AppBar>
   );

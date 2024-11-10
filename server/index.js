@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
-import { startListener, matchUsers } from './controllers/userController.js';
+import { startListener } from './controllers/userController.js';
 
 const app = express();
 const port = 6969;
@@ -13,10 +13,8 @@ const port = 6969;
 // Middleware setup
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
-
-// Allow CORS from your production domain
 app.use(cors({
-    origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+    origin: 'http://localhost:3000', // Allow client origin
     methods: ['GET', 'POST'],
     credentials: true // Allow credentials sharing
 }));
@@ -33,7 +31,7 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+        origin: 'http://localhost:3000', // Specific client origin
         methods: ['GET', 'POST'],
         credentials: true
     },
@@ -46,5 +44,3 @@ startListener(io);
 server.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
-
-setInterval(matchUsers, 15000)

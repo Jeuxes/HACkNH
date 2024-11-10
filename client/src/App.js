@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -6,43 +6,40 @@ import NavigationBar from './components/NavBar';
 import MapsPage from './pages/MapsPage';
 import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
+import {UserContext} from "./components/providers/UserProvider";
+import {SocketContext} from "./components/providers/SocketProvider";
 
 // Use environment variables for flexibility in production and development
-export const PORT = 6969;
-const ADDRESS = 'localhost';
-export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
-export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
-
-let socket = io(SOCKET_URL, {withCredentials: true});
+// export const PORT = 6969;
+// const ADDRESS = 'localhost';
+// export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
+// export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
+//
+// let socket = io(SOCKET_URL, {withCredentials: true});
 
 const App = () => {
+  const socket = useContext(SocketContext);
+  const user = useContext(UserContext);
+  const [userData, setUserData] = useState(null);
   const [navBarHeight, setNavBarHeight] = useState(120);
   const [userId, setUserId] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [canEnterChat, setCanEnterChat] = useState(false);
 
   const handleRegisterSuccess = (id) => {
-    setUserId(id);
-    setIsLoggedIn(true);
+    user.setIsLoggedIn(true);
+    user.setUserId(id);
     initializeSocket(id);
   };
 
   const initializeSocket = (id) => {
-    if (socket) {
-
-      console.log("Registering user", id);
-      socket.emit('register', id);
-
-      // Listen for a specific event to update state
-      socket.on('specificString', () => {
-        setCanEnterChat(true);
-      });
-
-      // Handle disconnect
-      socket.on('disconnect', () => {
-        setCanEnterChat(false);
-      });
-    }
+    console.log("Registering user", id);
+    socket.emit('register', id, (response) => {
+      console.log(`'resgister' response:`);
+      console.log(response.userData);
+      user.setFirstName(response.userData.firstname);
+      user.setLastName(response.userData.lastname);
+    });
   };
 
   useEffect(() => {
@@ -56,19 +53,19 @@ const App = () => {
       if (socket) {
         console.log(`User ${socket.id}: disconnecting`);
         socket.disconnect();
-        socket = null;
+        // socket = null;
       }
     };
   }, []);
 
   return (
     <div>
-      <NavigationBar navBarHeight={navBarHeight} isLoggedIn={isLoggedIn} canEnterChat={canEnterChat} />
+      <NavigationBar navBarHeight={navBarHeight} isLoggedIn={user.isLoggedIn} canEnterChat={user.canEnterChat} />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onRegisterSuccess={handleRegisterSuccess} />} />
-        <Route path="/maps" element={userId ? <MapsPage socket={socket} userId={userId} /> : <Navigate to="/login" />} />
-        <Route path="/chat" element={userId && canEnterChat ? <ChatPage socket={socket} userId={userId} /> : <Navigate to="/" />} />
+        <Route path="/maps" element={user.userId ? <MapsPage socket={socket} userId={user.userId} /> : <Navigate to="/login" />} />
+        <Route path="/chat" element={user.userId && user.canEnterChat ? <ChatPage socket={socket} userId={user.userId} /> : <Navigate to="/" />} />
       </Routes>
     </div>
   );
