@@ -10,8 +10,8 @@ import { io } from 'socket.io-client';
 // Use environment variables for flexibility in production and development
 export const PORT = 6969;
 const ADDRESS = 'localhost';
-export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
-export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
+export const API_BASE_URL = `http://${ADDRESS}`;
+export const SOCKET_URL = `ws://${ADDRESS}`; // Ensure WebSocket protocol
 
 let socket = io(SOCKET_URL, {withCredentials: true});
 
