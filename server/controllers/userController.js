@@ -8,9 +8,10 @@ import {packInterests} from '../util/interests.js'
  * {
  *   "user ID": {
  *     name: "Name",
- *     location: [lat, long],
+ *     lat: lat,
+ *     long: long,
  *     currentVenue: "Venue Name (must match key in venues)",
- *     socketId: socketId
+ *     socket: socket
  *   }
  * }
  */
@@ -19,12 +20,22 @@ export let activeUsers = {}
 /**
  * {
  *   "Venue Name": {
- *     location: "(lat, long)",
- *     type: "type"
+ *     lat: lat,
+ *     lon: lon,
+ *     users: #users
  *   }
  * }
  */
-export let venues = {}
+export let hotspots = {}
+
+// To be called periodically
+// export const matchUsers = () => {
+//     for (const [hsName, hs] of Object.entries(hotspots)) {
+//         let users = []
+
+
+//     }
+// }
 
 
 const getUser = async (uid) => {
@@ -33,8 +44,9 @@ const getUser = async (uid) => {
     const result = await pool.query(query)
 
     if (result.rowCount != 1) {
-        console.error(`Query for uid ${uid} returned ${result.rowCount} rows!`)
-        return null;
+        console.error(`Query for uid ${uid} returned ${result.rowCount} rows (expected 1)`)
+        console.error('Are there multiple servers accessing the database?')
+        throw new Error(`Query for uid ${uid} returned ${result.rowCount} rows (expected 1)`)
     }
 
     return result.rows[0]
@@ -64,31 +76,60 @@ export const register = async (req, res) => {
       console.error(`Error registering user:`, req.body, err);
       res.status(422).json({ message: err.message });
     }
-  };
+};
 
   
   
 
 export const updateLoc = (req, res) => {
-    res.status(200).json(null) // temp so client doesn't wait
-    // const post = req.body
+    const {uid, lat, lon} = req.body
 
-    // try {
+    try {
+        if (!(uid in activeUsers)) {
+            throw new Error(`User ${uid} not active, try logging in again`)
+        }
 
-    //     const uid = post['uid']
-    //     const lat = post['lat']
-    //     const long = post['long']
+        activeUsers[uid].lat = lat
+        activeUsers[uid].lon = lon
 
-
-    // } catch (err) {
-    //     res.status(422).json({message: err.message})
-    // }
-    
+    } catch (err) {
+        console.error(`User ${uid} tried to update location, but user was not active`)
+        res.status(500).json({ message: err.message })
+    }
 }
 
-export const getVenues = (req, res) => {
+export const setVenue = (req, res) => {
+    const {uid, venueName, lat, lon} = req.body
 
+    try {
+        if (!(uid in activeUsers)) {
+            const emsg = `User ${uid} not active, try logging in again`
+            console.error(emsg)
+            throw new Error(emsg)
+        }
+
+        activeUsers[uid].currentVenue = venueName
+
+        if (venueName in hotspots) {
+            hotspots[venueName].users += 1
+        } else {
+            hostspots[venueName] = {
+                lat: lat,
+                lon: lon,
+                users: 1
+            }
+        }
+
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
 }
+
+export const getHotspots = async (req, res) => {
+    const {uid} = req.body
+
+    res.status(200).json(hotspots)
+}   
 
 export const startListener = (io) => {
     io.on('connection', (socket) => {
@@ -99,13 +140,14 @@ export const startListener = (io) => {
             if (!(uid in activeUsers)) {
                 const userData = await getUser(uid)
                 activeUsers[uid] = {
-                    name: userData.name,
+                    firstName: userData.firstname,
+                    lastName: userData.lastname,
                     location: null,
                     currentVenue: null,
-                    socketId: socket.id
+                    socket: socket
                 }
             } else {
-                activeUsers[uid].socketId = socket.id
+                activeUsers[uid].socket = socket
             }
 
             console.log(`User ${uid} is registered with socket ID: ${socket.id}`);
@@ -129,12 +171,23 @@ export const startListener = (io) => {
         // Handle user disconnect
         socket.on('disconnect', () => {
             const disconnectedUserId = Object.keys(activeUsers).find(
-                (uid) => activeUsers[uid].socketId === socket.id
+                (uid) => activeUsers[uid].socket.id === socket.id
             );
             if (disconnectedUserId) {
+                if (activeUsers[disconnectedUserId].currentVenue in hotspots) {
+                    if (hotspots[activeUsers[disconnectedUserId].currentVenue].users > 1) {
+                        hotspots[activeUsers[disconnectedUserId].currentVenue].users -= 1
+                    } else {
+                        delete hotspots[activeUsers[disconnectedUserId].currentVenue]
+                    }
+                }
                 delete activeUsers[disconnectedUserId];
                 console.log(`User ${disconnectedUserId} disconnected.`);
             }
         });
     });
 };
+
+export const logUsers = (req, res) => {
+    console.log(activeUsers)
+}
