@@ -8,11 +8,12 @@ import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
 
 // Use environment variables for flexibility in production and development
-export const PORT = process.env.REACT_APP_PORT;
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-export const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
+export const PORT = 6969;
+const ADDRESS = 'localhost';
+export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
+export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
 
-let socket;
+let socket = io(SOCKET_URL, {withCredentials: true});
 
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
@@ -27,10 +28,7 @@ const App = () => {
   };
 
   const initializeSocket = (id) => {
-    if (!socket) {
-      socket = io(SOCKET_URL, {
-        withCredentials: true,
-      });
+    if (socket) {
 
       console.log("Registering user", id);
       socket.emit('register', id);
@@ -56,6 +54,7 @@ const App = () => {
     // Clean up WebSocket on unmount
     return () => {
       if (socket) {
+        console.log(`User ${socket.id}: disconnecting`);
         socket.disconnect();
         socket = null;
       }
