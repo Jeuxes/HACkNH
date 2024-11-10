@@ -1,6 +1,6 @@
 import express from 'express'
 
-import {register, updateLoc, getHotspots, setVenue, logUsers} from '../controllers/userController.js'
+import {register, updateLoc, getHotspots, setVenue, logUsers, testConnection} from '../controllers/userController.js'
 
 const router = express.Router()
 
@@ -11,6 +11,8 @@ router.post('/setVenue', setVenue)
 
 
 router.get('/logUsers', logUsers)
+router.get('/testConnection', testConnection)
+
 
 export default router
 
