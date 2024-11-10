@@ -9,7 +9,7 @@ import { io } from 'socket.io-client';
 
 // Use environment variables for flexibility in production and development
 export const PORT = 6969;
-export const API_BASE_URL = 'https://whereswildcats.com:6969';
+export const API_BASE_URL = 'https://whereswildcats.com';
 
 let socket = io('wss://whereswildcats.com', {withCredentials: true});
 
