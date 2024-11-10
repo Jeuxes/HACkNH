@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
 
 // Allow CORS from your production domain
 app.use(cors({
-    origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+    origin: ['http://whereswildcats.com', 'https://whereswildcats.com'], // Allow both HTTP and HTTPS origins
     methods: ['GET', 'POST'],
     credentials: true // Allow credentials sharing
 }));
@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ['http://whereswildcat.com', 'https://whereswildcat.com'], // Allow both HTTP and HTTPS origins
+        origin: ['http://whereswildcats.com', 'https://whereswildcats.com'], // Allow both HTTP and HTTPS origins
         methods: ['GET', 'POST'],
         credentials: true
     },
