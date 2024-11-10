@@ -92,9 +92,11 @@ export const startListener = (io) => {
     io.on('connection', (socket) => {
         console.log('A user connected:', socket.id);
 
-        socket.on('register', async (uid) => {
+        socket.on('register', async (uid, callback) => {
+            console.log(`call on 'register'`);
+            let userData = null;
             if (!(uid in activeUsers)) {
-                const userData = await getUser(uid);
+                userData = await getUser(uid);
                 activeUsers[uid] = {
                     firstName: userData.firstname,
                     lastName: userData.lastname,
@@ -107,6 +109,9 @@ export const startListener = (io) => {
             }
 
             console.log(`User ${uid} is registered with socket ID: ${socket.id}`);
+            callback({
+                userData: userData,
+            });
         });
 
         socket.on('sendMessage', (messageData) => {
