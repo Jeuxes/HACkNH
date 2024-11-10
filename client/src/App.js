@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NavigationBar from './components/NavBar';
@@ -14,23 +14,29 @@ let socket;
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
   const [userId, setUserId] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // New state for login status
-  const [canEnterChat, setCanEnterChat] = useState(false); // New state for chat entry condition
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [canEnterChat, setCanEnterChat] = useState(false);
 
   const handleRegisterSuccess = (id) => {
     setUserId(id);
-    setIsLoggedIn(true); // Set login status to true upon successful registration
+    setIsLoggedIn(true);
     initializeSocket(id);
   };
 
   const initializeSocket = (id) => {
     if (!socket) {
-      socket = io(`http://localhost:${PORT}`);
-      console.log("registering user", id);
+      socket = io(API_BASE_URL, {
+        withCredentials: true,
+        extraHeaders: {
+          "my-custom-header": "abcd" // If needed, replace with actual headers required
+        }
+      });
+
+      console.log("Registering user", id);
       socket.emit('register', id);
 
       socket.on('specificString', () => {
-        setCanEnterChat(true); // Enable chat access upon receiving specific string
+        setCanEnterChat(true);
       });
 
       socket.on('disconnect', () => {
@@ -44,6 +50,13 @@ const App = () => {
     if (navBar) {
       setNavBarHeight(navBar.offsetHeight);
     }
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+        socket = null; // Clean up the socket connection when the component unmounts
+      }
+    };
   }, []);
 
   return (
