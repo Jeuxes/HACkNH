@@ -3,6 +3,12 @@
   "esModuleInterop": true,
   "compilerOptions": {
     "allowJs": true,
-    "jsx": "react"
+    "jsx": "react",
+    "lib": [
+      "decorators",
+      "dom",
+      "es5",
+      "scripthost",
+    ]
   }
 }

@@ -9,10 +9,11 @@ import { io } from 'socket.io-client';
 
 
 export const PORT = 6969;
-export const API_BASE_URL = `http://localhost:${PORT}`;
-export const SOCKET_URL = `ws://localhost:${PORT}`; // Ensure WebSocket protocol
+const ADDRESS = 'localhost';
+export const API_BASE_URL = `http://${ADDRESS}:${PORT}`;
+export const SOCKET_URL = `ws://${ADDRESS}:${PORT}`; // Ensure WebSocket protocol
 
-let socket;
+let socket = io(SOCKET_URL, {withCredentials: true});
 
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
@@ -27,10 +28,7 @@ const App = () => {
   };
 
   const initializeSocket = (id) => {
-    if (!socket) {
-      socket = io(SOCKET_URL, {
-        withCredentials: true,
-      });
+    if (socket) {
 
       console.log("Registering user", id);
       socket.emit('register', id);
@@ -56,6 +54,7 @@ const App = () => {
     // Clean up WebSocket on unmount
     return () => {
       if (socket) {
+        console.log(`User ${socket.id}: disconnecting`);
         socket.disconnect();
         socket = null;
       }
