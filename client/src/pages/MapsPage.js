@@ -117,8 +117,9 @@ const MapsPage = () => {
           setVisible={setFilterDrawerVisible}
           isVisible={isFilterDrawerVisible}
           onClose={() => setFilterDrawerVisible(false)}
-          children={<FilterDrawerContent{...filterButtonProps}/>}
-        />
+        >
+          <FilterDrawerContent{...filterButtonProps}/>
+        </BottomDrawer>
       </View>
     </div>
   );
