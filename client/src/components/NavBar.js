@@ -3,24 +3,23 @@ import { Link, useLocation } from "react-router-dom";
 import { AppBar, Toolbar, Button, Box } from "@mui/material";
 import "../styling/NavBar.css";
 
-function NavigationBar() {
+function NavigationBar({ isLoggedIn, canEnterChat }) { // Receive isLoggedIn as a prop
   const location = useLocation();
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const scrollThreshold = 10; // Minimum scroll distance to trigger hiding/showing
+  const scrollThreshold = 10;
 
   const pages = [
-    { name: "Map", path: "/maps" },
-    { name: "Chat", path: "/chat" }
+    { name: "Map", path: "/maps", visible: isLoggedIn }, // Show only if logged in
+    { name: "Chat", path: "/chat", visible: canEnterChat } // Show only if canEnterChat is true
   ];
 
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
-    // Prevent hiding at the top of the page
     if (currentScrollY <= 0) {
       setVisible(true);
     } else if (Math.abs(currentScrollY - lastScrollY) > scrollThreshold) {
-      setVisible(currentScrollY < lastScrollY); // Show on scroll up, hide on scroll down
+      setVisible(currentScrollY < lastScrollY);
     }
     setLastScrollY(currentScrollY);
   };
@@ -37,9 +36,7 @@ function NavigationBar() {
       sx={{ backgroundColor: 'white', color: 'black' }}
     >
       <Toolbar className="toolbar">
-        {/* Navigation Links */}
         <Box className="nav-links" sx={{ display: 'flex', alignItems: 'center' }}>
-          {/* Clickable Wildcat image linked to home page */}
           <Link to="/">
             <img
               src="/images/wildcat.png"
@@ -48,28 +45,30 @@ function NavigationBar() {
                 width: '50px',
                 height: '50px',
                 marginRight: '8px',
-                cursor: 'pointer'  // Ensure it looks clickable
+                cursor: 'pointer'
               }}
             />
           </Link>
-          {pages.map((page) => (
-            <Button
-              key={page.name}
-              component={Link}
-              to={page.path}
-              color="inherit"
-              sx={{
-                fontSize: '1rem',
-                fontWeight: 'normal',
-                textDecoration: 'none',
-                marginLeft: '20px'  // Added for spacing between image and buttons
-              }}
-            >
-              {page.name}
-            </Button>
-          ))}
+          {pages.map(
+            (page) =>
+              page.visible && ( // Check visibility based on isLoggedIn and canEnterChat
+                <Button
+                  key={page.name}
+                  component={Link}
+                  to={page.path}
+                  color="inherit"
+                  sx={{
+                    fontSize: '1rem',
+                    fontWeight: 'normal',
+                    textDecoration: 'none',
+                    marginLeft: '20px'
+                  }}
+                >
+                  {page.name}
+                </Button>
+              )
+          )}
         </Box>
-        {/* Login Button */}
         <Button
           component={Link}
           to="/login"
@@ -77,7 +76,7 @@ function NavigationBar() {
           sx={{
             textDecoration: 'none',
             fontSize: '1rem',
-            marginLeft: 'auto'  // This pushes the login button to the right
+            marginLeft: 'auto'
           }}
         >
           Login

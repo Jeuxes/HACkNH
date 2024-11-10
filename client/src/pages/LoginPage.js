@@ -3,79 +3,77 @@ import { Container, Box, TextField, Button, Typography, FormControlLabel, Checkb
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/apiController';
 
-function LoginPage() {
-  const navigate = useNavigate();
-
+function LoginPage({ onRegisterSuccess }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
-  const [interests, setInterests] = useState({
-    football: false,
-    hockey: false,
-    tennis: false,
-    rockClimbing: false,
-    basketball: false,
-    reading: false,
-    traveling: false,
-    cooking: false,
-    hiking: false,
-    photography: false,
-    music: false,
-    painting: false,
-    gardening: false,
-    gaming: false,
-    yoga: false,
-    coding: false,
-    fishing: false,
-    dancing: false,
-    cycling: false,
-    swimming: false,
-  });
+  const [interests, setInterests] = useState([]);
+  
+  const navigate = useNavigate(); // Initialize navigate
 
-  const interestOptions = [
-    { name: 'football', label: 'Football' },
-    { name: 'hockey', label: 'Hockey' },
-    { name: 'tennis', label: 'Tennis' },
-    { name: 'rockClimbing', label: 'Rock Climbing' },
-    { name: 'basketball', label: 'Basketball' },
-    { name: 'reading', label: 'Reading' },
-    { name: 'traveling', label: 'Traveling' },
-    { name: 'cooking', label: 'Cooking' },
-    { name: 'hiking', label: 'Hiking' },
-    { name: 'photography', label: 'Photography' },
-    { name: 'music', label: 'Music' },
-    { name: 'painting', label: 'Painting' },
-    { name: 'gardening', label: 'Gardening' },
-    { name: 'gaming', label: 'Gaming' },
-    { name: 'yoga', label: 'Yoga' },
-    { name: 'coding', label: 'Coding' },
-    { name: 'fishing', label: 'Fishing' },
-    { name: 'dancing', label: 'Dancing' },
-    { name: 'cycling', label: 'Cycling' },
-    { name: 'swimming', label: 'Swimming' },
-  ];
-
+  const interestOptions = {
+    music: [
+      { name: 'Pop Music' },
+      { name: 'Rock Music' },
+      { name: 'Hip-Hop/Rap Music' },
+      { name: 'EDM' },
+      { name: 'Classical Music' },
+      { name: 'Indie/Alternative Music' },
+    ],
+    academic: [
+      { name: 'Science' },
+      { name: 'Literature' },
+      { name: 'History' },
+      { name: 'Politics/Current Affairs' },
+      { name: 'Philosophy' },
+      { name: 'Technology & Innovation' },
+      { name: 'Business/Entrepreneurship' },
+      { name: 'Environmental Issues' },
+    ],
+    lifestyle: [
+      { name: 'Fitness' },
+      { name: 'Socializing' },
+      { name: 'Mental Health' },
+      { name: 'Gaming' },
+      { name: 'Streaming/Watching TV' },
+      { name: 'Travel' },
+      { name: 'Food' },
+      { name: 'Volunteer/Community Service' },
+    ],
+    other: [
+      { name: 'Art' },
+      { name: 'Music Production' },
+      { name: 'DIY Projects' },
+      { name: 'Sports' },
+    ],
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const userData = {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      interests: Object.keys(interests).filter((key) => interests[key]),
+      interests,
     };
 
     try {
-      const data = await api.register(userData);
-      console.log('Registration successful:', data);
-      navigate('/');
+      const userId = await api.register(userData);
+      console.log('Registration successful with userId:', userId);
+      onRegisterSuccess(userId);  // Call parent function to store userId
+      navigate('/maps');          // Redirect to the maps page
     } catch (error) {
-      console.error('Error:', error);
+      console.log('Error during registration:', error);
       setError(error.message);
     }
   };
 
-  const handleInterestChange = (e) => {
-    setInterests({ ...interests, [e.target.name]: e.target.checked });
+  const handleInterestChange = (name) => (e) => {
+    setInterests((prevInterests) =>
+      e.target.checked
+        ? [...prevInterests, name]
+        : prevInterests.filter((interest) => interest !== name)
+    );
   };
 
   return (
@@ -120,27 +118,30 @@ function LoginPage() {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
-        
 
-          <Typography variant="h6" component="h2" sx={{ mt: 2, mb: 1 }}>
-            Interests
-          </Typography>
-          <Grid container spacing={1}>
-            {interestOptions.map((interest) => (
-              <Grid item xs={6} key={interest.name}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={interests[interest.name]}
-                      onChange={handleInterestChange}
-                      name={interest.name}
+          {Object.keys(interestOptions).map((category) => (
+            <Box key={category} sx={{ mt: 2 }}>
+              <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+                {category.charAt(0).toUpperCase() + category.slice(1)} Interests
+              </Typography>
+              <Grid container spacing={1}>
+                {interestOptions[category].map((interest) => (
+                  <Grid item xs={6} key={interest.name}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={interests.includes(interest.name)}
+                          onChange={handleInterestChange(interest.name)}
+                          name={interest.name}
+                        />
+                      }
+                      label={interest.name}
                     />
-                  }
-                  label={interest.label}
-                />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            </Box>
+          ))}
 
           <Button
             variant="contained"
