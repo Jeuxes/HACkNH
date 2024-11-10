@@ -23,4 +23,25 @@ export const api = {
       throw error;
     }
   },
+
+  setVenue: async (venueData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/setVenue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(venueData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Failed to set venue");
+        throw new Error(errorData.message || 'Setting venue failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error setting venue:', error);
+      throw error;
+    }
+  },
 };

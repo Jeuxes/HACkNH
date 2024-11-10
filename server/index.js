@@ -1,10 +1,11 @@
+// Import dependencies
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import userRoutes from './routes/user.js';
 import http from 'http';
 import { Server } from 'socket.io';
-import { startListener } from './controllers/userController.js'; // Import startListener from your socket file
+import { startListener } from './controllers/userController.js';
 
 const app = express();
 const port = 6969;
@@ -12,7 +13,11 @@ const port = 6969;
 // Middleware setup
 app.use(bodyParser.json({ limit: '30mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }));
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Allow client origin
+    methods: ['GET', 'POST'],
+    credentials: true // Allow credentials sharing
+}));
 
 // Routes
 app.use('/user', userRoutes);
@@ -26,8 +31,9 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:6969', // Adjust to your client origin
+        origin: 'http://localhost:3000', // Specific client origin
         methods: ['GET', 'POST'],
+        credentials: true
     },
 });
 

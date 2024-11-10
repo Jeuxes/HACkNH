@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NavigationBar from './components/NavBar';
@@ -7,8 +7,11 @@ import MapsPage from './pages/MapsPage';
 import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
 
+
 export const PORT = 6969;
 export const API_BASE_URL = `http://localhost:${PORT}`;
+export const SOCKET_URL = `ws://localhost:${PORT}`; // Ensure WebSocket protocol
+
 let socket;
 
 const App = () => {
@@ -25,20 +28,19 @@ const App = () => {
 
   const initializeSocket = (id) => {
     if (!socket) {
-      socket = io(API_BASE_URL, {
+      socket = io(SOCKET_URL, {
         withCredentials: true,
-        extraHeaders: {
-          "my-custom-header": "abcd" // If needed, replace with actual headers required
-        }
       });
 
       console.log("Registering user", id);
       socket.emit('register', id);
 
+      // Listen for a specific event to update state
       socket.on('specificString', () => {
         setCanEnterChat(true);
       });
 
+      // Handle disconnect
       socket.on('disconnect', () => {
         setCanEnterChat(false);
       });
@@ -51,10 +53,11 @@ const App = () => {
       setNavBarHeight(navBar.offsetHeight);
     }
 
+    // Clean up WebSocket on unmount
     return () => {
       if (socket) {
         socket.disconnect();
-        socket = null; // Clean up the socket connection when the component unmounts
+        socket = null;
       }
     };
   }, []);
@@ -65,9 +68,10 @@ const App = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onRegisterSuccess={handleRegisterSuccess} />} />
-        <Route path="/maps" element={<MapsPage />} />
-        <Route path="/chat" element={<ChatPage socket={socket} userId={userId} />} />
+        <Route path="/maps" element={userId ? <MapsPage userId={userId} /> : <Navigate to="/login" />} />
+        <Route path="/chat" element={userId && canEnterChat ? <ChatPage socket={socket} userId={userId} /> : <Navigate to="/" />} />
       </Routes>
+
     </div>
   );
 };

@@ -3,8 +3,9 @@ import { View, StyleSheet, Text, TouchableOpacity, FlatList } from 'react-native
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import SearchBar from "../components/map/SearchBar";
 import * as styles_ from "../styles";
+import { api } from '../services/apiController';
 
-const MapsPage = () => {
+const MapsPage = ({ userId }) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [radius, setRadius] = useState(91.44); // 300 feet in meters
   const [isFilterDrawerVisible, setFilterDrawerVisible] = useState(false);
@@ -12,16 +13,20 @@ const MapsPage = () => {
   const [coordinates, setCoordinates] = useState({ lat: 43.1340, lng: -70.9264 });
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
 
   useEffect(() => {
+    // Request user's geolocation
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
         setCoordinates(coords);
+        setLocationError(null); // Clear any previous error
         fetchNearbyLocations(coords);
       },
       (error) => {
         console.error('Error getting location:', error);
+        setLocationError('Unable to access your location. Please allow location access or try again.');
       }
     );
   }, []);
@@ -46,9 +51,26 @@ const MapsPage = () => {
     });
   };
 
-  const handleLocationSelect = (location) => {
+  const handleLocationSelect = async (location) => {
     setSelectedLocation(location);
     setModalVisible(false); // Close modal after selection
+
+    if (!userId) {
+      console.error("User ID is required to set the venue.");
+      return;
+    }
+
+    try {
+      await api.setVenue({
+        uid: userId,
+        venueName: location.name,
+        lat: location.geometry.location.lat(),
+        lon: location.geometry.location.lng(),
+      });
+      console.log(`Venue set to ${location.name}`);
+    } catch (error) {
+      console.error('Failed to set venue:', error);
+    }
   };
 
   const renderLocationItem = ({ item }) => (
@@ -66,39 +88,47 @@ const MapsPage = () => {
         isFilterDrawerVisible={isFilterDrawerVisible} 
         setFilterDrawerVisible={setFilterDrawerVisible} 
       />
-      <View style={styles.mapContainer}>
-        <LoadScript
-          googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
-          libraries={['places']} // Add 'places' library for Places API
-          loadingElement={<p>Loading map...</p>}
-          onError={(e) => console.error('Error loading Google Maps:', e)}
-        >
-          <GoogleMap
-            mapContainerStyle={{ marginLeft: "10%", marginTop: "5%", width: '100%', height: '100%' }}
-            center={coordinates}
-            zoom={18}
-            options={{
-              minZoom: 18,
-              maxZoom: 20,
-              fullscreenControl: false,
-              disableDefaultUI: true,
-            }}
-          >
-            {/* Display marker only when a location is selected */}
-            {selectedLocation && (
-              <Marker
-                position={{
-                  lat: selectedLocation.geometry.location.lat(),
-                  lng: selectedLocation.geometry.location.lng(),
-                }}
-                title={selectedLocation.name}
-              />
-            )}
-          </GoogleMap>
-        </LoadScript>
-      </View>
 
-      {/* Custom Overlay for Location Selection */}
+      {locationError ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{locationError}</Text>
+          <TouchableOpacity onPress={() => window.location.reload()} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.mapContainer}>
+          <LoadScript
+            googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
+            libraries={['places']} // Add 'places' library for Places API
+            loadingElement={<p>Loading map...</p>}
+            onError={(e) => console.error('Error loading Google Maps:', e)}
+          >
+            <GoogleMap
+              mapContainerStyle={{ marginLeft: "10%", marginTop: "5%", width: '100%', height: '100%' }}
+              center={coordinates}
+              zoom={18}
+              options={{
+                minZoom: 18,
+                maxZoom: 20,
+                fullscreenControl: false,
+                disableDefaultUI: true,
+              }}
+            >
+              {selectedLocation && (
+                <Marker
+                  position={{
+                    lat: selectedLocation.geometry.location.lat(),
+                    lng: selectedLocation.geometry.location.lng(),
+                  }}
+                  title={selectedLocation.name}
+                />
+              )}
+            </GoogleMap>
+          </LoadScript>
+        </View>
+      )}
+
       {modalVisible && (
         <View style={styles.overlay}>
           <View style={styles.overlayContent}>
@@ -171,6 +201,25 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    marginBottom: 10,
+  },
+  retryButton: {
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+  },
+  retryButtonText: {
     color: 'white',
     fontWeight: 'bold',
   },
