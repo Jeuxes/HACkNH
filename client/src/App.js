@@ -9,11 +9,9 @@ import { io } from 'socket.io-client';
 
 // Use environment variables for flexibility in production and development
 export const PORT = 6969;
-const ADDRESS = 'localhost';
-export const API_BASE_URL = `http://${ADDRESS}`;
-export const SOCKET_URL = `ws://${ADDRESS}`; // Ensure WebSocket protocol
+export const API_BASE_URL = `http://3.91.144.23:6969`;
 
-let socket = io(SOCKET_URL, {withCredentials: true});
+let socket = io('ws://3.91.144.23:6969', {withCredentials: true});
 
 const App = () => {
   const [navBarHeight, setNavBarHeight] = useState(120);
