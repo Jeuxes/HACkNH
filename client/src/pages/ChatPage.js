@@ -2,9 +2,11 @@ import React, {useState, useEffect, useContext} from 'react';
 import { Box, TextField, Button, Typography, List, ListItem, ListItemText, Divider, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import {SocketContext} from "../components/providers/SocketProvider";
+import {UserContext} from "../components/providers/UserProvider";
 
 function ChatPage({ userId }) {
   const socket = useContext(SocketContext);
+  const user = useContext(UserContext);
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -21,8 +23,9 @@ function ChatPage({ userId }) {
 
       socket.on('newMessage', (messageData) => {
         const parsedMessage = {
-          name: messageData.name,
+          senderId: messageData.name,
           content: messageData.content,
+          timestamp: 0,
         };
         setMessages((prevMessages) => [...prevMessages, parsedMessage]);
       });
@@ -41,8 +44,9 @@ function ChatPage({ userId }) {
     if (newMessage.trim() === '') return;
 
     const messageData = {
-      name: 'You',
+      senderId: user.userId,
       content: newMessage.trim(),
+      timestamp: 0,
     };
 
     socket.emit('sendMessage', messageData);

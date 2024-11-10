@@ -170,7 +170,7 @@ export const startListener = (io) => {
     io.on('connection', (socket) => {
         console.log('A user connected:', socket.id);
 
-        socket.on('register', async (uid, callback) => {
+        socket.on('register', async (uid) => {
             console.log(`call on 'register'`);
             let userData = null;
             if (!(uid in activeUsers)) {
@@ -185,14 +185,12 @@ export const startListener = (io) => {
             }
 
             console.log(`User ${uid} is registered with socket ID: ${socket.id}`);
-            callback({
-                userData: userData,
-            });
         });
 
         socket.on('matchResponse', (uid, accept) => {
             let matchUid;
             console.log(`User ${uid}: ${accept?"Accepted":"declined"}`);
+            
             if (!accept) {
                 matchUid = activeUsers[uid].matchUid
                 if (activeUsers[matchUid]) {
@@ -205,8 +203,12 @@ export const startListener = (io) => {
                 activeUsers[uid].matched = false
                 activeUsers[uid].accepted = false;
             } else {
-                matchUid = activeUsers[uid].matchUid
-                if (activeUsers[matchUid].accepted) {
+                activeUsers[uid].accepted = true;
+                matchUid = activeUsers[uid].matchUid // other user
+                if (activeUsers[matchUid].accepted) { // if other user accepted
+                    activeUsers[matchUid].matchUid = uid;
+                    activeUsers[matchUid].matched = true;
+                    activeUsers[uid].matched = true;
                     activeUsers[matchUid].socket.emit('partnerAccept');
                     activeUsers[uid].socket.emit('partnerAccept');
                 }
@@ -221,8 +223,10 @@ export const startListener = (io) => {
 
         socket.on('sendMessage', (messageData) => {
             const { senderId, content, timestamp } = messageData
-
-            if (!activeUsers[senderId].matched) {
+            console.log(senderId);
+            let matchUid_ = activeUsers[senderId].matchUid // other user
+            console.log(matchUid_);
+            if (!activeUsers[senderId] || !activeUsers[senderId].matched) {
                 console.warn(`Warning: User ${senderId} tried to send a message but did not have a match, ignoring`)
                 return
             }

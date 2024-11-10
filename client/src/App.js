@@ -34,12 +34,7 @@ const App = () => {
 
   const initializeSocket = (id) => {
     console.log("Registering user", id);
-    socket.emit('register', id, (response) => {
-      console.log(`'resgister' response:`);
-      console.log(response.userData);
-      user.setFirstName(response.userData.firstname);
-      user.setLastName(response.userData.lastname);
-    });
+    socket.emit('register', id);
   };
 
   useEffect(() => {
