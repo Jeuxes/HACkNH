@@ -8,7 +8,7 @@ import ChatPage from './pages/ChatPage';
 import { io } from 'socket.io-client';
 
 // Use the server's IP for API and WebSocket URLs
-export const API_BASE_URL = 'https://3.91.144.23:6969'; // API URL for the backend
+export const API_BASE_URL = 'http://3.91.144.23:6969';
 export const SOCKET_URL = 'wss://3.91.144.23:6969'; // WebSocket URL for the backend
 
 const App = () => {
